@@ -1,0 +1,19 @@
+{
+  "name": "Xadrez Pro 3D",
+  "short_name": "Xadrez Pro",
+  "description": "Xadrez Pro 3D — visual neon, IA offline e modos de jogo",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#01040c",
+  "theme_color": "#01040c",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
