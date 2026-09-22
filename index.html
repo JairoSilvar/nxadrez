@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Xadrez Pro 3D v6</title>
+  <title>Xadrez Pro 3D v7</title>
   <meta name="theme-color" content="#01040c" />
   <meta name="description" content="Xadrez Pro 3D — visual neon holográfico, IA e modos de jogo" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -14,14 +14,14 @@
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg" />
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chess.js@0.12.1/chess.min.js"></script>
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script src="three.js"></script>
+  <script src="OrbitControls.js"></script>
+  <script src="chess.min.js"></script>
+  <script src="peerjs.min.js"></script>
 </head>
 <body>
   <div id="ui">
-    <div class="logo">XADREZ <span>PRO</span> <small>3D v6</small></div>
+    <div class="logo">XADREZ <span>PRO</span> <small>3D v7</small></div>
 
     <div class="side-panel left">
       <div class="player-card" id="card-white">
@@ -53,6 +53,7 @@
       <button id="btn-mode" type="button">Modo: Local</button>
       <button id="btn-undo" type="button">Desfazer</button>
       <button id="btn-theme" type="button">Tema</button>
+      <button id="btn-camera" type="button" aria-pressed="true">🔓 Destravar câmera</button>
       <button id="btn-pieces" type="button">Peças 3D</button>
       <button id="btn-board" type="button">Tabuleiro</button>
       <button id="btn-sound" type="button" title="Som">🔊</button>
@@ -84,7 +85,7 @@
           <button type="button" data-piece-style="cyber" data-label="Cyber Neon">Cyber / Neon</button>
           <button type="button" data-piece-style="obsidian" data-label="Obsidiana">Obsidiana</button>
         </div>
-        <p class="mode-note">Na v6, Padrão, Staunton Clássico e Tournament Premium usam geometrias GLB diferentes. Royal e Cyber usam esculturas próprias. A escolha fica salva sem alterar a posição da partida.</p>
+        <p class="mode-note">Cada conjunto carrega sua própria geometria. A partida é preservada.</p>
         <button class="close-btn" id="btn-close-pieces" type="button">Fechar</button>
       </div>
     </div>
@@ -162,13 +163,15 @@
       </div>
     </div>
 
+  <div id="asset-status" role="status">Carregando peças 3D…</div>
   <div id="canvas-wrap"></div>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="GLTFLoader.js"></script>
+<script src="assets-v7.js"></script>
 <script src="game.js"></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js').catch(function () {});
+        navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}).catch(function () {});
       });
     }
   </script>

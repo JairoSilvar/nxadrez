@@ -1,113 +1,4 @@
-var XADREZ_PRO_BUILD_V6 = "6-20260922";
-/* v1.7 — Staunton GLB real, local, com fallback procedural */
-var XPStaunton = (function () {
-  var ready = false, failed = false, templates = {};
-  var aliases = {p:"pawn", r:"rook", n:"knight", b:"bishop", q:"queen", k:"king"};
-  function canonical(name) {
-    name = String(name || "").toLowerCase();
-    for (var key in aliases) {
-      if (name === key || name.indexOf(aliases[key]) >= 0) return aliases[key];
-    }
-    return name;
-  }
-  function markPiece(root, meta) {
-    root.userData = root.userData || {};
-    if (meta) for (var k in meta) root.userData[k] = meta[k];
-    root.traverse(function (o) {
-      if (o.isMesh) {
-        o.castShadow = true; o.receiveShadow = true;
-        o.userData = o.userData || {};
-        o.userData.xpPieceRoot = root;
-        if (meta) for (var k in meta) o.userData[k] = meta[k];
-      }
-    });
-  }
-  function cloneMaterialTree(root, material) {
-    root.traverse(function(o){ if(o.isMesh && material) o.material = material; });
-  }
-  function normalize(root) {
-    var box = new THREE.Box3().setFromObject(root);
-    var size = new THREE.Vector3(), center = new THREE.Vector3();
-    box.getSize(size); box.getCenter(center);
-    root.position.x -= center.x; root.position.z -= center.z; root.position.y -= box.min.y;
-    var maxXZ = Math.max(size.x, size.z);
-    var h = size.y || 1;
-    var s = Math.min(0.78 / (maxXZ || 1), 1.55 / h);
-    root.scale.multiplyScalar(s);
-    root.updateMatrixWorld(true);
-    return root;
-  }
-  function load(onDone) {
-    if (ready || failed) { if(onDone) onDone(ready); return; }
-    if (!THREE.GLTFLoader) { failed = true; if(onDone) onDone(false); return; }
-    new THREE.GLTFLoader().load("models/model.glb", function(gltf) {
-      var found = {};
-      var wanted = ["pawn","rook","knight","bishop","queen","king"];
-      gltf.scene.updateMatrixWorld(true);
-      gltf.scene.traverse(function(o) {
-        var n = canonical(o.name);
-        if (wanted.indexOf(n) < 0) return;
-        // Prefer a named parent/group for the whole sculpture instead of one sub-mesh.
-        var score = (o.isGroup ? 100 : 0) + (o.children && o.children.length ? 20 : 0);
-        if (!found[n] || score > found[n].score) found[n] = {obj:o, score:score};
-      });
-      wanted.forEach(function(type){
-        if (found[type]) {
-          var source = found[type].obj;
-          var t = source.clone(true);
-          // Bake the source world transform so imported rotations/scales are not lost.
-          t.applyMatrix4(source.matrixWorld);
-          templates[type] = normalize(t);
-        }
-      });
-      ready = Object.keys(templates).length === 6;
-      failed = !ready;
-      if(onDone) onDone(ready);
-    }, undefined, function(){ failed = true; if(onDone) onDone(false); });
-  }
-  function create(type, material, meta) {
-    type = canonical(type);
-    if (!ready || !templates[type]) return null;
-    var p = templates[type].clone(true);
-    cloneMaterialTree(p, material);
-    markPiece(p, meta);
-    return p;
-  }
-  return {load:load, create:create, isReady:function(){return ready;}, hasFailed:function(){return failed;}};
-})();
-XPStaunton.load(function(ok) {
-  if (ok) {
-    // Replace any procedural startup pieces as soon as the local GLB is ready.
-    setTimeout(function(){ if (window.XPRebuildPiecesWithStaunton) window.XPRebuildPiecesWithStaunton(); }, 0);
-  }
-});
-
-// v6 — bibliotecas de GEOMETRIA reais. Cada opção abaixo carrega modelos diferentes,
-// não apenas outra cor/material sobre o mesmo mesh.
-var XPLightPieces = (function(){
-  var templates={}, loading=false, ready=false, wait=[];
-  var types=['pawn','rook','knight','bishop','queen','king'];
-  function normalize(root){ var b=new THREE.Box3().setFromObject(root),sz=new THREE.Vector3(),c=new THREE.Vector3(); b.getSize(sz);b.getCenter(c);root.position.x-=c.x;root.position.z-=c.z;root.position.y-=b.min.y;root.scale.multiplyScalar(Math.min(.78/Math.max(sz.x,sz.z,0.001),1.55/Math.max(sz.y,.001)));root.updateMatrixWorld(true);return root; }
-  function load(done){ if(ready){done&&done(true);return;} if(done)wait.push(done); if(loading)return; loading=true; var left=types.length;
-    types.forEach(function(t){new THREE.GLTFLoader().load('models/sets/light/'+t+'.glb',function(g){templates[t]=normalize(g.scene.clone(true));if(--left===0){ready=true;loading=false;wait.splice(0).forEach(function(f){f(true);});}},undefined,function(){if(--left===0){loading=false;wait.splice(0).forEach(function(f){f(false);});}});}); }
-  function create(type,mat,meta){var n={p:'pawn',r:'rook',n:'knight',b:'bishop',q:'queen',k:'king'}[type]||type;if(!ready||!templates[n])return null;var x=templates[n].clone(true);x.traverse(function(o){if(o.isMesh){o.material=mat;o.castShadow=true;o.receiveShadow=true;o.userData=Object.assign(o.userData||{},meta||{});}});return x;}
-  return {load:load,create:create,isReady:function(){return ready;}};
-})();
-var XPPremiumPieces = (function(){
-  var templates={},ready=false,loading=false,wait=[];
-  function norm(root){var b=new THREE.Box3().setFromObject(root),sz=new THREE.Vector3(),c=new THREE.Vector3();b.getSize(sz);b.getCenter(c);root.position.x-=c.x;root.position.z-=c.z;root.position.y-=b.min.y;root.scale.multiplyScalar(Math.min(.78/Math.max(sz.x,sz.z,.001),1.55/Math.max(sz.y,.001)));root.updateMatrixWorld(true);return root;}
-  function load(done){if(ready){done&&done(true);return;}if(done)wait.push(done);if(loading)return;loading=true;new THREE.GLTFLoader().load('models/ABeautifulGame.glb',function(g){
-    function one(name){var o=g.scene.getObjectByName(name);return o?norm(o.clone(true)):null;}
-    templates.k=one('King_W');templates.q=one('Queen_W');templates.r=one('Castle_W1');templates.n=one('Knight_W1');templates.b=one('Bishop_W1');
-    var pg=new THREE.Group(),a=g.scene.getObjectByName('Pawn_Top_W1'),b=g.scene.getObjectByName('Pawn_Body_W1');if(a)pg.add(a.clone(true));if(b)pg.add(b.clone(true));templates.p=norm(pg);
-    ready=['p','r','n','b','q','k'].every(function(t){return !!templates[t];});loading=false;wait.splice(0).forEach(function(f){f(ready);});
-  },undefined,function(){loading=false;wait.splice(0).forEach(function(f){f(false);});});}
-  function create(t,mat,meta){if(!ready||!templates[t])return null;var x=templates[t].clone(true);x.traverse(function(o){if(o.isMesh){o.material=mat;o.castShadow=true;o.receiveShadow=true;o.userData=Object.assign(o.userData||{},meta||{});}});return x;}
-  return {load:load,create:create,isReady:function(){return ready;}};
-})();
-
-// v6 — tabuleiro 3D real opcional (asset enviado pelo usuário).
-var XPBoardAsset=(function(){var tpl=null,loading=false,wait=[];function load(done){if(tpl){done&&done(tpl.clone(true));return;}if(done)wait.push(done);if(loading)return;loading=true;new THREE.GLTFLoader().load('models/boards/Chess.glb',function(g){var o=g.scene.getObjectByName('Board')||g.scene;var x=o.clone(true);var b=new THREE.Box3().setFromObject(x),sz=new THREE.Vector3(),c=new THREE.Vector3();b.getSize(sz);b.getCenter(c);x.position.x-=c.x;x.position.z-=c.z;x.position.y-=b.min.y;var sc=(1.24*8.35)/Math.max(sz.x,sz.z,.001);x.scale.multiplyScalar(sc);x.traverse(function(m){if(m.isMesh){m.receiveShadow=true;m.castShadow=true;}});tpl=x;loading=false;wait.splice(0).forEach(function(f){f(tpl.clone(true));});},undefined,function(){loading=false;wait=[];});}return{load:load};})();
+var XADREZ_PRO_BUILD_V7 = "7-20260922";
 // Xadrez Pro 3D — Nova versão
 // Visual neon + IA + temas + Toasty + animação por peça
 (function () {
@@ -129,8 +20,12 @@ var XPBoardAsset=(function(){var tpl=null,loading=false,wait=[];function load(do
   ];
 
   let currentTheme = THEMES[0];
-  let pieceStyle = localStorage.getItem('xp-piece-style') || 'padrao';
-  let boardStyle = localStorage.getItem('xp-board-style') || 'neon';
+  let pieceStyle = localStorage.getItem('xp-v7-piece-style') || 'padrao';
+  if (!XPAssets.sets[pieceStyle]) pieceStyle='padrao';
+  let templates=null, assetBusy=false, pieceRequest=0, boardRequest=0, boardAsset=null;
+  let cameraLocked=true;
+  let boardStyle = localStorage.getItem('xp-v7-board-style') || 'neon';
+  if (!XPAssets.boards[boardStyle]) boardStyle='neon';
   let gameMode = 'local';
   let playerIsWhite = true;
   let aiThinking = false;
@@ -146,20 +41,6 @@ var XPBoardAsset=(function(){var tpl=null,loading=false,wait=[];function load(do
   let toastyCount = { check: 0, promo: 0, queen: 0, castle: 0 };
   let wasInCheck = false;
 
-function rebuildPiecesWithStaunton() {
-  if (!XPStaunton.isReady()) return;
-  try {
-    loadPosition();
-    if (typeof renderStatus === "function") renderStatus();
-  } catch(e) {
-    console.warn("Staunton rebuild fallback:", e);
-  }
-}
-
-  window.XPRebuildPiecesWithStaunton = rebuildPiecesWithStaunton;
-  // Se o GLB terminou de carregar antes do jogo expor a reconstrução, aplica agora.
-  if (XPStaunton.isReady()) setTimeout(rebuildPiecesWithStaunton, 0);
-
   function init() {
     const wrap = document.getElementById('canvas-wrap');
     scene = new THREE.Scene();
@@ -169,7 +50,7 @@ function rebuildPiecesWithStaunton() {
     camera = new THREE.PerspectiveCamera((innerWidth/innerHeight)<0.72 ? 48 : 35, innerWidth / innerHeight, 0.1, 120);
     camera.position.set(0, 12.2, 10.8);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: location.search.includes('verify') });
     renderer.setSize(innerWidth, innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
@@ -180,10 +61,11 @@ function rebuildPiecesWithStaunton() {
 
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 0.25, 0);
-    controls.enableDamping = true;
+    controls.enableDamping = false;
+    controls.enabled = false;
     controls.dampingFactor = 0.08;
     controls.minDistance = 6;
-    controls.maxDistance = 22;
+    controls.maxDistance = 150;
     controls.maxPolarAngle = Math.PI * 0.46;
     controls.minPolarAngle = 0.22;
     controls.enablePan = false;
@@ -191,7 +73,8 @@ function rebuildPiecesWithStaunton() {
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
 
-    scene.add(new THREE.AmbientLight(0x0c1a2c, 0.5));
+    scene.add(new THREE.AmbientLight(0x8ea0b7, 0.7));
+    scene.add(new THREE.HemisphereLight(0xdbe8ff,0x34283a,.55));
     const key = new THREE.DirectionalLight(0xd0e4ff, 1.05);
     key.position.set(5, 16, 8);
     key.castShadow = true;
@@ -216,16 +99,17 @@ function rebuildPiecesWithStaunton() {
     buildBoard();
     buildPlatform();
     buildParticles();
-    if(pieceStyle==='classico') XPLightPieces.load(function(){loadPosition();});
-    else if(pieceStyle==='premium') XPPremiumPieces.load(function(){loadPosition();});
-    else loadPosition();
+
+    loadPosition();
     applyThemeCSS();
     bindUI();
     initAudio();
     animate();
     atualizarStatus();
     updatePlayCamera();
-    playIntroCinematic();
+    onResize();
+    selectPieces(pieceStyle, true);
+    selectBoard(boardStyle, true);
     bindGlobalActivity();
   }
 
@@ -249,33 +133,26 @@ function rebuildPiecesWithStaunton() {
     if (pieceBtn) pieceBtn.onclick = function () { document.getElementById('pieces-modal').classList.remove('hidden'); };
     var pieceClose = document.getElementById('btn-close-pieces');
     if (pieceClose) pieceClose.onclick = function () { document.getElementById('pieces-modal').classList.add('hidden'); };
-    document.querySelectorAll('#pieces-modal [data-piece-style]').forEach(function(btn){
-      btn.onclick = function(){
-        pieceStyle = btn.dataset.pieceStyle;
-        localStorage.setItem('xp-piece-style', pieceStyle);
-        var finish=function(){ loadPosition(); document.getElementById('pieces-modal').classList.add('hidden'); showToast('Peças: ' + (btn.dataset.label || btn.textContent)); };
-        if(pieceStyle==='classico') XPLightPieces.load(finish);
-        else if(pieceStyle==='premium') XPPremiumPieces.load(finish);
-        else finish();
-      };
-    });
-    var boardBtn = document.getElementById('btn-board');
-    if (boardBtn) boardBtn.onclick = function(){ document.getElementById('board-modal').classList.remove('hidden'); };
-    var boardClose = document.getElementById('btn-close-board');
-    if (boardClose) boardClose.onclick = function(){ document.getElementById('board-modal').classList.add('hidden'); };
-    document.querySelectorAll('#board-modal [data-board-style]').forEach(function(btn){
-      btn.onclick = function(){
-        boardStyle = btn.dataset.boardStyle;
-        localStorage.setItem('xp-board-style', boardStyle);
-        buildBoard();
-        document.getElementById('board-modal').classList.add('hidden');
-        showToast('Tabuleiro: ' + (btn.dataset.label || btn.textContent));
-      };
-    });
+    const pieceOptions=document.querySelector('#pieces-modal .piece-options');
+    pieceOptions.innerHTML='';
+    Object.entries(XPAssets.sets).forEach(([id,def])=>{const b=document.createElement('button');b.type='button';b.textContent=def.name;b.dataset.pieceStyle=id;b.onclick=()=>selectPieces(id);pieceOptions.appendChild(b);});
+    document.getElementById('btn-board').onclick=()=>document.getElementById('board-modal').classList.remove('hidden');
+    document.getElementById('btn-close-board').onclick=()=>document.getElementById('board-modal').classList.add('hidden');
+    const boardOptions=document.querySelector('#board-modal .board-options');boardOptions.innerHTML='';
+    Object.entries(XPAssets.boards).forEach(([id,def])=>{const b=document.createElement('button');b.type='button';b.textContent=def.name;b.dataset.boardStyle=id;b.onclick=()=>selectBoard(id);boardOptions.appendChild(b);});
+    document.getElementById('btn-camera').onclick=()=>{
+      cameraLocked=!cameraLocked;cameraAnimToken++;cineActive=false;
+      controls.enableDamping=false;controls.update();controls.enabled=!cameraLocked;
+      if(cameraLocked) onResize();
+      document.getElementById('btn-camera').textContent=cameraLocked?'🔓 Destravar câmera':'🔒 Enquadrar / Travar';
+      document.getElementById('btn-camera').setAttribute('aria-pressed',String(cameraLocked));
+    };
+    if(window.visualViewport)window.visualViewport.addEventListener('resize',onResize);
     var controlsToggle = document.getElementById('btn-controls-toggle');
     if (controlsToggle) controlsToggle.onclick = function () {
       document.body.classList.toggle('controls-collapsed');
       controlsToggle.textContent = document.body.classList.contains('controls-collapsed') ? '☰' : '×';
+      requestAnimationFrame(onResize);
     };
     document.getElementById('btn-theme').onclick = () => {
       document.getElementById('theme-modal').classList.remove('hidden');
@@ -316,67 +193,41 @@ function rebuildPiecesWithStaunton() {
     });
   }
 
+  function showToast(message){const el=document.getElementById('asset-status');el.textContent=message;el.hidden=false;clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>{el.hidden=true;},2600);}
+  async function selectPieces(id, startup=false) {
+    if(animating){showToast('Aguarde o lance terminar');return;}
+    const request=++pieceRequest;assetBusy=true;
+    const status=document.getElementById('asset-status');status.hidden=false;status.textContent='Carregando '+XPAssets.sets[id].name+'…';
+    try {
+      const next=await XPAssets.loadSet(id);if(request!==pieceRequest)return;
+      // A remote move may have started while downloading; swap only between animations.
+      while(animating)await new Promise(r=>setTimeout(r,40));
+      if(request!==pieceRequest)return;
+      templates=next;pieceStyle=id;localStorage.setItem('xp-v7-piece-style',id);deselect();loadPosition();
+      document.querySelectorAll('[data-piece-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.pieceStyle===id)));
+      document.getElementById('pieces-modal').classList.add('hidden');status.hidden=true;onResize();
+      if(!startup)showToast('Peças: '+XPAssets.sets[id].name);
+    }catch(e){console.error('Falha no conjunto',id,e);status.textContent='Não foi possível carregar '+XPAssets.sets[id].name+'. Abra Peças 3D para tentar novamente.';}
+    finally{if(request===pieceRequest)assetBusy=false;}
+  }
+  async function selectBoard(id,startup=false){
+    const request=++boardRequest;
+    try{const next=await XPAssets.loadBoard(id);if(request!==boardRequest)return;boardStyle=id;boardAsset=next;buildBoard();localStorage.setItem('xp-v7-board-style',id);document.getElementById('board-modal').classList.add('hidden');onResize();if(!startup)showToast('Tabuleiro: '+XPAssets.boards[id].name);}
+    catch(e){console.error('Falha no tabuleiro',id,e);showToast('Falha ao carregar tabuleiro. Tente novamente.');}
+  }
   function buildBoard() {
-    while (boardGroup.children.length) boardGroup.remove(boardGroup.children[0]);
-    const geo = new THREE.BoxGeometry(SQUARE * 0.96, 0.12, SQUARE * 0.96);
-    const off = 3.5 * SQUARE;
-    for (let r = 0; r < 8; r++) {
-      for (let f = 0; f < 8; f++) {
-        const isLight = (r + f) % 2 === 1;
-        var bp = {
-          neon:      {l:0x122840,d:0x0a1520, e1:0x061020,e2:0x030810, metal:.20,rough:.35,coat:.50,ei:.35},
-          madeira:   {l:0xc89b68,d:0x5b321d, e1:0x000000,e2:0x000000, metal:.02,rough:.48,coat:.62,ei:0},
-          marmore:   {l:0xe7e4dc,d:0x374151, e1:0x050505,e2:0x020205, metal:.05,rough:.20,coat:.95,ei:.04},
-          medieval:  {l:0x9b7b50,d:0x3f3328, e1:0x080502,e2:0x020201, metal:.10,rough:.62,coat:.20,ei:.03},
-          crystal:   {l:0x9eeaff,d:0x285e78, e1:currentTheme.w,e2:currentTheme.b, metal:.02,rough:.08,coat:1,ei:.16},
-          cyber:     {l:0x062b38,d:0x21072d, e1:currentTheme.w,e2:currentTheme.b, metal:.55,rough:.16,coat:1,ei:.65},
-          minimal:   {l:0xd8dee9,d:0x485260, e1:0x000000,e2:0x000000, metal:0,rough:.72,coat:.05,ei:0}
-        }[boardStyle] || null;
-        if (!bp) bp = {l:0x122840,d:0x0a1520,e1:0x061020,e2:0x030810,metal:.2,rough:.35,coat:.5,ei:.35};
-        const mat = new THREE.MeshPhysicalMaterial({
-          color: isLight ? bp.l : bp.d,
-          metalness: bp.metal, roughness: bp.rough,
-          clearcoat: bp.coat, clearcoatRoughness: Math.min(.45,bp.rough),
-          emissive: isLight ? bp.e1 : bp.e2,
-          emissiveIntensity: bp.ei,
-          transparent: boardStyle === 'crystal', opacity: boardStyle === 'crystal' ? .86 : 1,
-          transmission: boardStyle === 'crystal' ? .18 : 0
-        });
-        const sq = new THREE.Mesh(geo, mat);
-        sq.position.set(f * SQUARE - off, 0, (7 - r) * SQUARE - off);
-        sq.receiveShadow = true;
-        sq.userData = { square: alg(f, r), isLight: isLight };
-        boardGroup.add(sq);
+    while(boardGroup.children.length)boardGroup.remove(boardGroup.children[0]);
+    if(boardAsset){boardAsset.traverse(o=>{if(o.isMesh)o.receiveShadow=true;});boardGroup.add(boardAsset);}
+    const imported=!!boardAsset;
+    if(!imported || XPAssets.boards[boardStyle].squares){
+      for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+        const light=(f+r)%2===1;
+        const mat=new THREE.MeshStandardMaterial({color:imported?(light?0xd9cbae:0x302c29):(light?0x173146:0x07121e),roughness:.5,metalness:.15});
+        const sq=new THREE.Mesh(new THREE.BoxGeometry(SQUARE,.06,SQUARE),mat);sq.position.set((f-3.5)*SQUARE,0,(r-3.5)*SQUARE);sq.receiveShadow=true;sq.userData={square:alg(f,7-r),isLight:light};boardGroup.add(sq);
       }
     }
-    const border = new THREE.Mesh(
-      new THREE.BoxGeometry(SQUARE * 8.4, 0.1, SQUARE * 8.4),
-      new THREE.MeshPhysicalMaterial({
-        color: 0x00141e, emissive: currentTheme.w, emissiveIntensity: 0.7,
-        metalness: 0.85, roughness: 0.15, transparent: true, opacity: 0.9
-      })
-    );
-    border.position.y = -0.08; border.name = 'border';
-    boardGroup.add(border);
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(SQUARE * 4.38, SQUARE * 4.58, 64),
-      new THREE.MeshBasicMaterial({ color: currentTheme.w, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
-    );
-    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; ring.name = 'ring';
-    boardGroup.add(ring);
-    // v6: diferenças estruturais reais entre tabuleiros, não apenas cores.
-    if (boardStyle === 'medieval') {
-      var towers = [[-5.25,-5.25],[5.25,-5.25],[-5.25,5.25],[5.25,5.25]];
-      towers.forEach(function(q){var t=new THREE.Mesh(new THREE.CylinderGeometry(.34,.46,.42,8),new THREE.MeshStandardMaterial({color:0x4b3826,roughness:.78}));t.position.set(q[0],.12,q[1]);boardGroup.add(t);});
-    } else if (boardStyle === 'cyber') {
-      for(var i=0;i<4;i++){var rail=new THREE.Mesh(new THREE.BoxGeometry(i<2?10.8:.08,.12,i<2?.08:10.8),new THREE.MeshBasicMaterial({color:i%2?currentTheme.b:currentTheme.w}));rail.position.set(i===2?-5.25:i===3?5.25:0,.04,i===0?-5.25:i===1?5.25:0);boardGroup.add(rail);}
-    } else if (boardStyle === 'madeira') {
-      XPBoardAsset.load(function(real){ real.position.y=-.18; real.name='real-board-asset'; boardGroup.add(real); });
-    } else if (boardStyle === 'minimal') {
-      border.scale.set(.97,.45,.97); ring.visible=false;
-    } else if (boardStyle === 'crystal') {
-      border.material.opacity=.45; border.scale.set(1.025,.35,1.025);
-    }
+    if(!imported){const border=new THREE.Mesh(new THREE.BoxGeometry(SQUARE*8.4,.18,SQUARE*8.4),new THREE.MeshPhysicalMaterial({color:0x00141e,emissive:currentTheme.w,emissiveIntensity:.35,metalness:.8,roughness:.2}));border.position.y=-.13;border.name='border';boardGroup.add(border);}
+    const platform=scene.getObjectByName('platform');if(platform)platform.visible=!imported;
   }
 
   function buildPlatform() {
@@ -428,44 +279,18 @@ function rebuildPiecesWithStaunton() {
       cyber:    {color:isW?0x00e5ff:0xff2d9b, emissive:isW?0x00a6c8:0xb00066, ei:.95, metal:.28, rough:.10, trans:.12, opacity:.96, coat:1},
       obsidian: {color:isW?0x64748b:0x08090d, emissive:isW?0x0f172a:0x16001f, ei:.18, metal:.66, rough:.12, trans:0, opacity:1, coat:1}
     };
-    var pp = presets[pieceStyle] || presets.padrao;
+    var pp = presets[pieceStyle] || (pieceStyle==='medieval'?presets.royal:pieceStyle==='tournament'?presets.classico:presets.premium);
     const mat = new THREE.MeshPhysicalMaterial({
       color: pp.color, emissive: pp.emissive, emissiveIntensity: pp.ei,
       metalness: pp.metal, roughness: pp.rough, transmission: pp.trans,
       clearcoat: pp.coat, clearcoatRoughness: .06,
       transparent: pp.opacity < 1 || pp.trans > 0, opacity: pp.opacity, side: THREE.DoubleSide
     });
-    const baseMat = mat.clone();
-    baseMat.roughness = Math.min(.42, pp.rough + .06);
-    baseMat.emissiveIntensity = pp.ei * 1.08;
-    var classic = pieceStyle === 'classico' || pieceStyle === 'premium';
-    // v1.8: usa de fato a geometria Staunton do GLB quando carregada.
-    // A fábrica procedural abaixo permanece somente como fallback.
-    let body = null;
-    if (pieceStyle === 'classico') body = XPLightPieces.create(type, mat, {type:type,color:color});
-    else if (pieceStyle === 'premium') body = XPPremiumPieces.create(type, mat, {type:type,color:color});
-    else if (pieceStyle !== 'royal' && pieceStyle !== 'cyber') body = XPStaunton.create(type, mat, { type: type, color: color });
-    const usingStaunton = !!body;
-    if (!body) {
-      switch (type) {
-        case 'p': body = makePawn(mat, baseMat); break;
-        case 'r': body = makeRook(mat, baseMat); break;
-        case 'n': body = makeKnight(mat, baseMat); break;
-        case 'b': body = makeBishop(mat, baseMat); break;
-        case 'q': body = makeQueen(mat, baseMat); break;
-        case 'k': body = makeKing(mat, baseMat); break;
-        default: body = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 18), mat);
-      }
-    }
+    const body=templates[type].clone(true);
+    body.traverse(o=>{if(o.isMesh){if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();o.material=mat;o.castShadow=true;o.receiveShadow=true;}});
     g.add(body);
-    // O loader já normaliza o GLB para a casa; escala antiga só vale para fallback.
-    g.scale.setScalar(usingStaunton ? 1.0 : PIECE_SCALE);
-    // Orientação física: cada exército olha para o oponente. O cavalo recebe a mesma regra
-    // independentemente da perspectiva da câmera; a câmera pode girar, a peça não perde a frente.
-    var facing = (type === 'n') ? ((color === 'w') ? -Math.PI/2 : Math.PI/2) : ((color === 'w') ? 0 : Math.PI);
-    g.userData.facingY = facing;
-    g.userData = { type:type, color:color, col:col, baseY:0.04, staunton:usingStaunton, facingY:facing };
-    g.rotation.y = facing;
+    const facing=(type==='n'?XPAssets.sets[pieceStyle].yaw:0)+(isW?0:Math.PI);
+    g.userData={type,color,col,baseY:.04,staunton:true,facingY:facing,setId:pieceStyle};g.rotation.y=facing;
     body.traverse(function(o){
       o.userData = o.userData || {};
       o.userData.type = type; o.userData.color = color; o.userData.xpPieceRoot = g;
@@ -483,105 +308,6 @@ function rebuildPiecesWithStaunton() {
     spr.userData.xpNeonPhase = Math.random() * Math.PI * 2;
     g.add(spr);
     }
-    return g;
-  }
-
-  function add(p, geo, mat, y) {
-    const m = new THREE.Mesh(geo, mat);
-    m.position.y = y; m.castShadow = true; p.add(m);
-    return m;
-  }
-
-  // Peças estilo cristal clássico (silhueta de xadrez legível)
-  function makePawn(m, bm) {
-    const g = new THREE.Group();
-    add(g, new THREE.CylinderGeometry(0.32, 0.38, 0.10, 28), bm, 0.05);
-    add(g, new THREE.CylinderGeometry(0.20, 0.28, 0.08, 28), bm, 0.14);
-    add(g, new THREE.CylinderGeometry(0.11, 0.18, 0.42, 28), m, 0.36);
-    add(g, new THREE.SphereGeometry(0.175, 28, 18), m, 0.68);
-    return g;
-  }
-  function makeRook(m, bm) {
-    const g = new THREE.Group();
-    add(g, new THREE.CylinderGeometry(0.34, 0.40, 0.10, 28), bm, 0.05);
-    add(g, new THREE.CylinderGeometry(0.26, 0.30, 0.08, 28), bm, 0.14);
-    add(g, new THREE.CylinderGeometry(0.22, 0.26, 0.70, 28), m, 0.50);
-    add(g, new THREE.CylinderGeometry(0.32, 0.32, 0.11, 28), m, 0.95);
-    for (let i = 0; i < 4; i++) {
-      const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
-      const bat = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.20, 0.12), m);
-      bat.position.set(Math.cos(a) * 0.20, 1.12, Math.sin(a) * 0.20);
-      g.add(bat);
-    }
-    return g;
-  }
-  function makeKnight(m, bm) {
-    // Cavalo mais reconhecível: base + corpo + pescoço curvo + cabeça de perfil
-    const g = new THREE.Group();
-    add(g, new THREE.CylinderGeometry(0.32, 0.38, 0.10, 28), bm, 0.05);
-    add(g, new THREE.CylinderGeometry(0.22, 0.28, 0.08, 28), bm, 0.14);
-    // corpo
-    add(g, new THREE.CylinderGeometry(0.13, 0.20, 0.32, 16), m, 0.34);
-    // peito
-    const chest = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), m);
-    chest.position.set(0.02, 0.55, 0); chest.scale.set(1, 1.15, 0.85); g.add(chest);
-    // pescoço inclinado
-    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 0.36, 12), m);
-    neck.position.set(0.10, 0.78, 0); neck.rotation.z = -0.55; g.add(neck);
-    // cabeça (perfil de cavalo)
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.14, 14, 12), m);
-    head.position.set(0.28, 0.98, 0); head.scale.set(1.35, 0.85, 0.75); g.add(head);
-    // focinho
-    const snout = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 0.18, 10), m);
-    snout.position.set(0.44, 0.94, 0); snout.rotation.z = -1.35; g.add(snout);
-    // orelha
-    const ear = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.14, 8), m);
-    ear.position.set(0.22, 1.12, 0.02); ear.rotation.z = 0.3; g.add(ear);
-    // crina simples
-    const mane = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.22, 0.12), m);
-    mane.position.set(0.08, 0.95, 0); mane.rotation.z = 0.4; g.add(mane);
-    return g;
-  }
-  function makeBishop(m, bm) {
-    const g = new THREE.Group();
-    add(g, new THREE.CylinderGeometry(0.32, 0.38, 0.10, 28), bm, 0.05);
-    add(g, new THREE.CylinderGeometry(0.22, 0.28, 0.08, 28), bm, 0.14);
-    add(g, new THREE.CylinderGeometry(0.10, 0.20, 0.65, 28), m, 0.48);
-    add(g, new THREE.ConeGeometry(0.17, 0.46, 28), m, 1.08);
-    // fenda da mitra (marca do bispo)
-    const slit = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.22, 0.18), m);
-    slit.position.y = 1.08; g.add(slit);
-    add(g, new THREE.SphereGeometry(0.06, 12, 10), m, 1.35);
-    return g;
-  }
-  function makeQueen(m, bm) {
-    const g = new THREE.Group();
-    add(g, new THREE.CylinderGeometry(0.34, 0.40, 0.10, 28), bm, 0.05);
-    add(g, new THREE.CylinderGeometry(0.24, 0.30, 0.08, 28), bm, 0.14);
-    add(g, new THREE.CylinderGeometry(0.13, 0.24, 0.72, 28), m, 0.54);
-    add(g, new THREE.CylinderGeometry(0.24, 0.16, 0.12, 28), m, 1.02);
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      const h = i % 2 === 0 ? 0.20 : 0.14;
-      const sp = new THREE.Mesh(new THREE.ConeGeometry(0.038, h, 8), m);
-      sp.position.set(Math.cos(a) * 0.15, 1.20, Math.sin(a) * 0.15);
-      g.add(sp);
-    }
-    add(g, new THREE.SphereGeometry(0.08, 14, 12), m, 1.36);
-    return g;
-  }
-  function makeKing(m, bm) {
-    const g = new THREE.Group();
-    add(g, new THREE.CylinderGeometry(0.34, 0.40, 0.10, 28), bm, 0.05);
-    add(g, new THREE.CylinderGeometry(0.24, 0.30, 0.08, 28), bm, 0.14);
-    add(g, new THREE.CylinderGeometry(0.13, 0.24, 0.78, 28), m, 0.56);
-    add(g, new THREE.CylinderGeometry(0.22, 0.16, 0.12, 28), m, 1.08);
-    // cruz clássica
-    const cv = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.36, 0.065), m);
-    cv.position.y = 1.38; g.add(cv);
-    const ch = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.065, 0.065), m);
-    ch.position.y = 1.44; g.add(ch);
-    add(g, new THREE.SphereGeometry(0.055, 10, 8), m, 1.20);
     return g;
   }
 
@@ -604,11 +330,13 @@ function rebuildPiecesWithStaunton() {
   }
 
   function clearPieces() {
+    const mats=new Set();piecesGroup.traverse(o=>{if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>mats.add(m));}});mats.forEach(m=>m.dispose());
     while (piecesGroup.children.length) piecesGroup.remove(piecesGroup.children[0]);
     pieceMap = {}; selectedMesh = null;
   }
 
   function loadPosition() {
+    if (!templates) return;
     clearPieces();
     const board = chess.board();
     for (let r = 0; r < 8; r++) {
@@ -777,7 +505,7 @@ function rebuildPiecesWithStaunton() {
     pointerDownPos = null; isDragging = false;
     resetIdleTimer();
     if (cineActive === 'idle') stopCinematic(true);
-    if (wasDrag || animating || aiThinking || chess.game_over()) return;
+    if (wasDrag || assetBusy || !templates || animating || aiThinking || chess.game_over()) return;
     if (gameMode !== 'local') {
       if (gameMode === 'paris' && !parisReady) return;
       if (chess.turn() !== (playerIsWhite ? 'w' : 'b')) return;
@@ -1167,7 +895,9 @@ function rebuildPiecesWithStaunton() {
     wasInCheck = false;
     atualizarStatus();
     playSelect();
-    playIntroCinematic();
+    onResize();
+    selectPieces(pieceStyle, true);
+    selectBoard(boardStyle, true);
   }
 
   function desfazer() {
@@ -1197,7 +927,7 @@ function rebuildPiecesWithStaunton() {
     scene.background = bg.clone();
     scene.fog.color.copy(bg);
     boardGroup.children.forEach(function (o) {
-      if (o.userData && typeof o.userData.isLight === 'boolean') {
+      if (boardStyle==='neon' && o.userData && typeof o.userData.isLight === 'boolean') {
         var base = new THREE.Color(o.userData.isLight ? 0x122840 : 0x0a1520);
         var tint = new THREE.Color(o.userData.isLight ? theme.w : theme.b);
         o.material.color.copy(base.lerp(tint, o.userData.isLight ? 0.16 : 0.11));
@@ -1387,26 +1117,37 @@ function rebuildPiecesWithStaunton() {
   }, { once: true });
 
   function updatePlayCamera() {
-    var a = innerWidth / Math.max(innerHeight, 1);
-    var sign = playerIsWhite ? 1 : -1;
-    // Portrait: afasta a câmera para que as 64 casas e a moldura caibam entre topo e controles.
-    if (a < 0.72) PLAY_CAM = { x: 0, y: 25.5, z: 15.5 * sign };
-    else if (a > 1.45 && innerHeight < 650) PLAY_CAM = { x: 0, y: 10.8, z: 9.4 * sign };
-    else PLAY_CAM = { x: 0, y: 12.2, z: 10.8 * sign };
+    const wrap=document.getElementById('canvas-wrap');const w=wrap.clientWidth,h=wrap.clientHeight;
+    camera.aspect=w/Math.max(h,1);camera.fov=w<h?42:35;camera.updateProjectionMatrix();
+    const bounds=new THREE.Box3().setFromObject(boardGroup);
+    bounds.min.y=Math.min(bounds.min.y,-.15);bounds.max.y=Math.max(bounds.max.y,2.0);
+    const center=bounds.getCenter(new THREE.Vector3());center.y=.45;
+    const direction=new THREE.Vector3(0,w<h?1.55:1.25,playerIsWhite?1:-1).normalize();
+    const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(new THREE.Vector3(x,y,z));
+    let lo=1,hi=150;
+    for(let i=0;i<36;i++){
+      const dist=(lo+hi)/2;camera.position.copy(center).addScaledVector(direction,dist);camera.lookAt(center);camera.updateMatrixWorld(true);
+      const fits=corners.every(v=>{const q=v.clone().project(camera);return q.z<1&&q.z>-1&&Math.abs(q.x)<=.965&&Math.abs(q.y)<=.94;});
+      if(fits)hi=dist;else lo=dist;
+    }
+    PLAY_CAM={x:center.x+direction.x*hi,y:center.y+direction.y*hi,z:center.z+direction.z*hi};PLAY_TARGET={x:center.x,y:center.y,z:center.z};
+    camera.position.set(PLAY_CAM.x,PLAY_CAM.y,PLAY_CAM.z);controls.target.copy(center);camera.lookAt(center);controls.update();
   }
-
   function onResize() {
-    camera.aspect = innerWidth / innerHeight;
-    camera.fov = camera.aspect < 0.72 ? 48 : 35;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth, innerHeight);
-    updatePlayCamera();
-    if (!cineActive) { camera.position.set(PLAY_CAM.x, PLAY_CAM.y, PLAY_CAM.z); controls.target.set(PLAY_TARGET.x, PLAY_TARGET.y, PLAY_TARGET.z); controls.update(); }
+    if(!renderer)return;
+    const small=innerWidth<=720||innerHeight<500,collapsed=document.body.classList.contains('controls-collapsed');
+    const wrap=document.getElementById('canvas-wrap');
+    if(small){const status=document.getElementById('status').getBoundingClientRect();const control=document.getElementById(collapsed?'btn-controls-toggle':'bottom-bar').getBoundingClientRect();wrap.style.cssText='position:fixed;left:0;right:0;top:'+Math.ceil(Math.max(56,status.bottom+8))+'px;bottom:'+Math.ceil(innerHeight-control.top+8)+'px;';}
+    else{wrap.style.cssText='position:fixed;left:'+(collapsed?16:218)+'px;right:210px;top:100px;bottom:20px;';}
+    document.documentElement.style.setProperty('--play-top',wrap.style.top);document.documentElement.style.setProperty('--play-bottom',wrap.style.bottom);
+    const old=camera.position.clone(),target=controls.target.clone();renderer.setSize(wrap.clientWidth,Math.max(wrap.clientHeight,1));updatePlayCamera();
+    if(!cameraLocked&&!cineActive){camera.position.copy(old);controls.target.copy(target);controls.update();}
+    controls.enabled=!cameraLocked;
   }
 
   function animate() {
     requestAnimationFrame(animate);
-    controls.update();
+    if (!cameraLocked) controls.update();
     if (scene.userData.particles) {
       const p = scene.userData.particles.geometry.attributes.position.array;
       for (let i = 0; i < p.length; i += 3) {
@@ -1445,14 +1186,14 @@ function rebuildPiecesWithStaunton() {
     if (idleTimer) clearTimeout(idleTimer);
     if (cineActive === 'idle') stopCinematic(true);
     idleTimer = setTimeout(function () {
-      if (!animating && !aiThinking && !cineActive) playIdleCinematic();
+      if (!cameraLocked && !animating && !aiThinking && !cineActive) playIdleCinematic();
     }, IDLE_MS);
   }
 
   function stopCinematic(restorePlay) {
     cineActive = false;
     cameraAnimToken++; // cancela imediatamente qualquer animação antiga ainda agendada
-    controls.enabled = true;
+    controls.enabled = !cameraLocked;
     updatePlayCamera();
     if (restorePlay) animateCameraTo(PLAY_CAM, PLAY_TARGET, 160);
   }
@@ -1489,6 +1230,7 @@ function rebuildPiecesWithStaunton() {
   }
 
   function playIntroCinematic() {
+    if(cameraLocked)return;
     // v6: no celular vertical entra direto no enquadramento jogável; nada de zoom que corte o tabuleiro.
     if (innerWidth <= 720 && innerHeight > innerWidth) {
       cineActive=false; controls.enabled=true; updatePlayCamera(); camera.position.set(PLAY_CAM.x,PLAY_CAM.y,PLAY_CAM.z); controls.target.set(PLAY_TARGET.x,PLAY_TARGET.y,PLAY_TARGET.z); controls.update(); resetIdleTimer(); return;
@@ -1515,7 +1257,7 @@ function rebuildPiecesWithStaunton() {
         // v1.8: vai direto para a câmera de jogo; remove o zoom intermediário demorado.
         animateCameraTo(PLAY_CAM, PLAY_TARGET, 325, function () {
           cineActive = false;
-          controls.enabled = true;
+          controls.enabled = !cameraLocked;
           updatePlayCamera();
           camera.position.set(PLAY_CAM.x, PLAY_CAM.y, PLAY_CAM.z);
           controls.target.set(PLAY_TARGET.x, PLAY_TARGET.y, PLAY_TARGET.z);
@@ -1528,7 +1270,7 @@ function rebuildPiecesWithStaunton() {
   }
 
   function playIdleCinematic() {
-    if (cineActive || animating || aiThinking) return;
+    if (cameraLocked || cineActive || animating || aiThinking) return;
     cineActive = 'idle';
     controls.enabled = false;
     var pieces = Object.keys(pieceMap);
@@ -1569,14 +1311,7 @@ function rebuildPiecesWithStaunton() {
   }
 
   function applyPlayerPerspective() {
-    // Cada jogador vê o próprio exército na parte inferior do tabuleiro.
-    updatePlayCamera();
-    var z = PLAY_CAM.z;
-    if (!cineActive && camera && controls) {
-      camera.position.set(PLAY_CAM.x, PLAY_CAM.y, z);
-      controls.target.set(0, 0.25, 0);
-      controls.update();
-    }
+    cameraAnimToken++;cineActive=false;updatePlayCamera();controls.enabled=!cameraLocked;
   }
 
   function enterParisDirect() {
@@ -1782,4 +1517,8 @@ function rebuildPiecesWithStaunton() {
   bindParisUI();
   init();
 })();
+
+
+
+
 
