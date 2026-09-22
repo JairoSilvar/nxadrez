@@ -43,6 +43,77 @@ style.css
 game.js
 manifest.json
 sw.js
-assets/rei-desesperado.svg
+assets/toasty-sprite.png
+assets/toasty.mp3
 README.md
 ```
+
+## Refinos v1.1
+- Rastro/sombreamento dos lances nas casas percorridas, com cores diferentes para brancas e pretas e adaptação automática ao tema.
+- Temas agora influenciam suavemente tabuleiro, plataforma, iluminação, partículas, fundo e interface.
+- Intro cinematográfica automática ao carregar/recarregar e também em Nova Partida.
+- Modo idle encerra com teclado, toque, clique ou roda do mouse e retorna rapidamente à câmera oficial de jogo.
+- Câmera/layout adaptados para celular vertical e horizontal, priorizando a área útil do tabuleiro.
+- Sons adicionais para movimento, captura, roque, promoção, xeque e xeque-mate.
+
+## v1.2 — refinamentos
+- Rastro de movimento mais forte, incluindo todas as casas atravessadas por torre, bispo e rainha.
+- Retorno do modo idle cancela a animação anterior e restaura rapidamente o enquadramento oficial de jogo.
+- Barra de controles mais compacta no celular e botão para recolher/mostrar, priorizando o tabuleiro.
+- Mantidos temas globais, intro, sons de movimento, Sala Paris, IA, Toasty e PWA.
+
+## v1.3 — peças e interface
+- Dois estilos independentes do tema: A — Staunton Clássico 3D e B — Staunton Futurista.
+- Material clássico sólido/polido ou futurista cristalino/emissivo, preservando as cores do tema.
+- Geometria Staunton refinada, com atenção especial ao cavalo e silhuetas legíveis.
+- Controles em barra vertical lateral no desktop para não cobrir o tabuleiro.
+- Rastro de movimento mais evidente, incluindo casas intermediárias de torre, bispo e rainha.
+- Apenas o último rastro de cada lado é mantido: novo lance branco substitui o rastro branco anterior; idem para pretas.
+
+## v1.4 — atualização de assets e preparação Staunton
+
+- Toasty atualizado para a nova imagem fornecida pelo usuário, preservando o áudio/animação existentes.
+- Cache/PWA atualizado para a build v1.4.
+- Mantidos os estilos A (Staunton Clássico) e B (Staunton Futurista) e todos os recursos existentes da v1.3.
+- Integração GLB realista: **não embutida nesta build**, porque nenhum arquivo `.glb/.gltf` de modelo Staunton foi fornecido junto ao projeto. A arquitetura definida prevê seis geometrias-base (`pawn`, `rook`, `knight`, `bishop`, `queen`, `king`) com fallback procedural. Não foi criado um modelo falso por primitivas, para não repetir o problema visual do cavalo.
+
+## v1.5 — consolidação
+
+- Nova imagem transparente do Toasty incorporada em `assets/toasty-sprite.png`, preservando o áudio e a animação existentes.
+- Mantidos os ajustes acumulados da v1.3/v1.4: menu vertical no desktop, responsividade mobile, câmera/idle, introdução, temas, sons, IA, Sala Paris, PWA e rastros de movimento.
+- Os estilos de peças A (Staunton Clássico) e B (Staunton Futurista) permanecem disponíveis conforme a implementação existente.
+- A integração de um conjunto Staunton GLB realista continua preparada como próximo passo, mas **nenhum arquivo GLB/GLTF foi incluído nesta build**, pois os bytes do asset externo licenciado ainda não estão disponíveis localmente. O fallback procedural existente foi preservado.
+- Não foi criado um modelo 3D fictício para o cavalo: a melhoria real de modelagem dependerá da inclusão do asset Staunton GLB.
+
+
+## v1.6 — ajustes acumulados
+- Desktop: controles reposicionados para a lateral por CSS, preservando os IDs/eventos existentes; botão de recolher também lateral.
+- Toasty: imagem PNG transparente mantida, ancorada ao rodapé e surgindo pela lateral; áudio preservado.
+- Ritmo: transições de interface e durações cinematográficas identificáveis foram encurtadas, sem alterar temporizadores de IA/rede.
+- Sala Paris: a lógica existente foi preservada para evitar regressão. Onde já havia modo espectador, foi reforçado o bloqueio de jogadas do espectador.
+- Peças 3D: a integração GLB continua pendente nesta build. O modelo CC0 selecionado foi verificado, mas o arquivo binário não pôde ser incorporado automaticamente neste ambiente. O fallback atual permanece intacto.
+- Nenhum recurso existente foi deliberadamente removido.
+
+## v1.7 — asset Staunton real incorporado
+- `models/staunton-set.glb` incluído localmente no ZIP.
+- GLB validado como glTF 2.0 e inspecionado antes do empacotamento.
+- Loader local preparado para reconhecer `pawn`, `rook`, `knight`, `bishop`, `queen` e `king`, normalizar escala/base e preservar metadados de raycast.
+- O modelo é pré-carregado e o sistema procedural permanece como fallback se o GLB não puder ser carregado.
+- O asset foi adicionado ao cache PWA.
+- Observação técnica: a fábrica procedural original foi preservada. A substituição automática só é feita quando a arquitetura existente permite fazê-la sem quebrar movimentos/IA/multiplayer; esta build não remove a fábrica antiga.
+
+## v1.8 — correção funcional após revisão da v1.7
+- Corrigida a causa de as peças não mudarem: `createPiece()` agora chama de fato `XPStaunton.create()` e usa o GLB real; as primitivas ficam apenas como fallback.
+- Ao terminar o carregamento do GLB, o tabuleiro é recarregado para substituir as peças iniciais procedurais.
+- Menu desktop corrigido usando o seletor real `.bottom-bar`; aberto e recolhido permanecem na lateral, com o botão de minimizar/expandir também lateral.
+- Sala Paris não abre mais o modal intermediário ao selecionar Paris: tenta entrar diretamente e, se a sala ainda não existir, tenta assumir como anfitrião.
+- A animação inicial foi encurtada de forma explícita e o zoom intermediário ao centro foi removido.
+- Observação: a infraestrutura PeerJS atual é P2P para dois jogadores. O fluxo de espectadores múltiplos exige ampliar o protocolo de rede; não foi falsamente marcado como concluído nesta correção.
+
+## v1.9 — peças Staunton visíveis + botão lateral corrigido
+- O carregador do GLB agora escolhe a escultura completa de cada tipo, preferindo o grupo/nó nomeado em vez de um sub-mesh isolado.
+- O transform mundial importado é preservado antes da normalização, evitando peças invisíveis/deslocadas.
+- Quando o GLB termina de carregar, o tabuleiro atual é reconstruído imediatamente com as peças Staunton.
+- Novo Jogo, recarga de posição e promoção continuam passando pela mesma `createPiece()`, portanto usam Staunton depois do carregamento.
+- Procedurais continuam somente como fallback caso o GLB falhe.
+- No desktop, o botão de recolher foi movido para baixo do painel VOCÊ; o menu vertical começa abaixo dele.

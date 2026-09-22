@@ -1,3 +1,87 @@
+var XADREZ_PRO_BUILD_V19 = "1.9-20260922";
+/* v1.7 — Staunton GLB real, local, com fallback procedural */
+var XPStaunton = (function () {
+  var ready = false, failed = false, templates = {};
+  var aliases = {p:"pawn", r:"rook", n:"knight", b:"bishop", q:"queen", k:"king"};
+  function canonical(name) {
+    name = String(name || "").toLowerCase();
+    for (var key in aliases) {
+      if (name === key || name.indexOf(aliases[key]) >= 0) return aliases[key];
+    }
+    return name;
+  }
+  function markPiece(root, meta) {
+    root.userData = root.userData || {};
+    if (meta) for (var k in meta) root.userData[k] = meta[k];
+    root.traverse(function (o) {
+      if (o.isMesh) {
+        o.castShadow = true; o.receiveShadow = true;
+        o.userData = o.userData || {};
+        o.userData.xpPieceRoot = root;
+        if (meta) for (var k in meta) o.userData[k] = meta[k];
+      }
+    });
+  }
+  function cloneMaterialTree(root, material) {
+    root.traverse(function(o){ if(o.isMesh && material) o.material = material; });
+  }
+  function normalize(root) {
+    var box = new THREE.Box3().setFromObject(root);
+    var size = new THREE.Vector3(), center = new THREE.Vector3();
+    box.getSize(size); box.getCenter(center);
+    root.position.x -= center.x; root.position.z -= center.z; root.position.y -= box.min.y;
+    var maxXZ = Math.max(size.x, size.z);
+    var h = size.y || 1;
+    var s = Math.min(0.78 / (maxXZ || 1), 1.55 / h);
+    root.scale.multiplyScalar(s);
+    root.updateMatrixWorld(true);
+    return root;
+  }
+  function load(onDone) {
+    if (ready || failed) { if(onDone) onDone(ready); return; }
+    if (!THREE.GLTFLoader) { failed = true; if(onDone) onDone(false); return; }
+    new THREE.GLTFLoader().load("models/staunton-set.glb", function(gltf) {
+      var found = {};
+      var wanted = ["pawn","rook","knight","bishop","queen","king"];
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse(function(o) {
+        var n = canonical(o.name);
+        if (wanted.indexOf(n) < 0) return;
+        // Prefer a named parent/group for the whole sculpture instead of one sub-mesh.
+        var score = (o.isGroup ? 100 : 0) + (o.children && o.children.length ? 20 : 0);
+        if (!found[n] || score > found[n].score) found[n] = {obj:o, score:score};
+      });
+      wanted.forEach(function(type){
+        if (found[type]) {
+          var source = found[type].obj;
+          var t = source.clone(true);
+          // Bake the source world transform so imported rotations/scales are not lost.
+          t.applyMatrix4(source.matrixWorld);
+          templates[type] = normalize(t);
+        }
+      });
+      ready = Object.keys(templates).length === 6;
+      failed = !ready;
+      if(onDone) onDone(ready);
+    }, undefined, function(){ failed = true; if(onDone) onDone(false); });
+  }
+  function create(type, material, meta) {
+    type = canonical(type);
+    if (!ready || !templates[type]) return null;
+    var p = templates[type].clone(true);
+    cloneMaterialTree(p, material);
+    markPiece(p, meta);
+    return p;
+  }
+  return {load:load, create:create, isReady:function(){return ready;}, hasFailed:function(){return failed;}};
+})();
+XPStaunton.load(function(ok) {
+  if (ok) {
+    // Replace any procedural startup pieces as soon as the local GLB is ready.
+    setTimeout(rebuildPiecesWithStaunton, 0);
+  }
+});
+
 // Xadrez Pro 3D — Nova versão
 // Visual neon + IA + temas + Toasty + animação por peça
 (function () {
@@ -19,12 +103,13 @@
   ];
 
   let currentTheme = THEMES[0];
+  let pieceStyle = localStorage.getItem('xp-piece-style') || 'futurista';
   let gameMode = 'local';
   let playerIsWhite = true;
   let aiThinking = false;
 
   let scene, camera, renderer, controls, raycaster, mouse;
-  let boardGroup, piecesGroup, highlightsGroup, lastMoveGroup;
+  let boardGroup, piecesGroup, highlightsGroup, lastMoveGroup, moveTrailGroup;
   let chess = new Chess();
   let selected = null, legal = [], animating = false;
   let pieceMap = {}, pendingPromo = null, selectedMesh = null;
@@ -33,6 +118,18 @@
   let lastToastyAt = 0;
   let toastyCount = { check: 0, promo: 0, queen: 0, castle: 0 };
   let wasInCheck = false;
+
+function rebuildPiecesWithStaunton() {
+  if (!XPStaunton.isReady()) return;
+  try {
+    loadPosition();
+    if (typeof renderStatus === "function") renderStatus();
+  } catch(e) {
+    console.warn("Staunton rebuild fallback:", e);
+  }
+}
+
+
 
   function init() {
     const wrap = document.getElementById('canvas-wrap');
@@ -84,7 +181,8 @@
     piecesGroup = new THREE.Group();
     highlightsGroup = new THREE.Group();
     lastMoveGroup = new THREE.Group();
-    scene.add(boardGroup, piecesGroup, highlightsGroup, lastMoveGroup);
+    moveTrailGroup = new THREE.Group();
+    scene.add(boardGroup, piecesGroup, highlightsGroup, lastMoveGroup, moveTrailGroup);
 
     buildBoard();
     buildPlatform();
@@ -95,6 +193,9 @@
     initAudio();
     animate();
     atualizarStatus();
+    updatePlayCamera();
+    playIntroCinematic();
+    bindGlobalActivity();
   }
 
   function bindUI() {
@@ -113,6 +214,18 @@
     document.getElementById('btn-undo').onclick = desfazer;
     document.getElementById('btn-sound').onclick = toggleSound;
     document.getElementById('btn-toasty').onclick = () => showToasty();
+    var pieceBtn = document.getElementById('btn-pieces');
+    if (pieceBtn) pieceBtn.onclick = function () { document.getElementById('pieces-modal').classList.remove('hidden'); };
+    var pieceClose = document.getElementById('btn-close-pieces');
+    if (pieceClose) pieceClose.onclick = function () { document.getElementById('pieces-modal').classList.add('hidden'); };
+    document.querySelectorAll('#pieces-modal [data-piece-style]').forEach(function(btn){
+      btn.onclick = function(){ pieceStyle = btn.dataset.pieceStyle; localStorage.setItem('xp-piece-style', pieceStyle); loadPosition(); document.getElementById('pieces-modal').classList.add('hidden'); showToast(pieceStyle === 'classico' ? 'Peças: Staunton Clássico' : 'Peças: Staunton Futurista'); };
+    });
+    var controlsToggle = document.getElementById('btn-controls-toggle');
+    if (controlsToggle) controlsToggle.onclick = function () {
+      document.body.classList.toggle('controls-collapsed');
+      controlsToggle.textContent = document.body.classList.contains('controls-collapsed') ? '☰' : '×';
+    };
     document.getElementById('btn-theme').onclick = () => {
       document.getElementById('theme-modal').classList.remove('hidden');
       buildThemeGrid();
@@ -132,7 +245,7 @@
           const pt = THEMES.find(t => t.id === 'paris');
           if (pt) applyTheme(pt);
           document.getElementById('mode-modal').classList.add('hidden');
-          openParisRoom();
+          enterParisDirect();
           return;
         }
         document.getElementById('name-black').textContent = gameMode === 'local' ? 'ADVERSÁRIO' : 'MÁQUINA';
@@ -169,7 +282,7 @@
         const sq = new THREE.Mesh(geo, mat);
         sq.position.set(f * SQUARE - off, 0, (7 - r) * SQUARE - off);
         sq.receiveShadow = true;
-        sq.userData = { square: alg(f, r) };
+        sq.userData = { square: alg(f, r), isLight: isLight };
         boardGroup.add(sq);
       }
     }
@@ -198,7 +311,7 @@
         emissive: 0x001018, emissiveIntensity: 0.4, clearcoat: 0.8
       })
     );
-    plat.position.y = -0.35; plat.receiveShadow = true;
+    plat.position.y = -0.35; plat.receiveShadow = true; plat.name = 'platform';
     scene.add(plat);
   }
 
@@ -229,41 +342,55 @@
     const col = isW ? currentTheme.w : currentTheme.b;
     const em = isW ? currentTheme.emW : currentTheme.emB;
 
-    // Cristal / vidro holográfico (estilo da imagem de referência)
+    // A = Staunton clássico; B = Staunton futurista. A geometria é compartilhada e o material muda.
+    const classic = pieceStyle === 'classico';
     const mat = new THREE.MeshPhysicalMaterial({
       color: col,
-      emissive: em,
-      emissiveIntensity: 0.55,
-      metalness: 0.05,
-      roughness: 0.12,
-      transmission: 0.45,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      transparent: true,
-      opacity: 0.88,
+      emissive: classic ? 0x000000 : em,
+      emissiveIntensity: classic ? 0.0 : 0.55,
+      metalness: classic ? 0.22 : 0.05,
+      roughness: classic ? 0.30 : 0.12,
+      transmission: classic ? 0.0 : 0.45,
+      clearcoat: classic ? 0.72 : 1.0,
+      clearcoatRoughness: classic ? 0.16 : 0.05,
+      transparent: !classic,
+      opacity: classic ? 1.0 : 0.88,
       side: THREE.DoubleSide
     });
     const baseMat = mat.clone();
-    baseMat.transmission = 0.25;
-    baseMat.opacity = 0.95;
-    baseMat.emissiveIntensity = 0.7;
+    baseMat.transmission = classic ? 0 : 0.25;
+    baseMat.opacity = classic ? 1 : 0.95;
+    baseMat.emissiveIntensity = classic ? 0 : 0.7;
     baseMat.roughness = 0.12;
 
-    let body;
-    switch (type) {
-      case 'p': body = makePawn(mat, baseMat); break;
-      case 'r': body = makeRook(mat, baseMat); break;
-      case 'n': body = makeKnight(mat, baseMat); break;
-      case 'b': body = makeBishop(mat, baseMat); break;
-      case 'q': body = makeQueen(mat, baseMat); break;
-      case 'k': body = makeKing(mat, baseMat); break;
-      default: body = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 18), mat);
+    // v1.8: usa de fato a geometria Staunton do GLB quando carregada.
+    // A fábrica procedural abaixo permanece somente como fallback.
+    let body = XPStaunton.create(type, mat, { type: type, color: color });
+    const usingStaunton = !!body;
+    if (!body) {
+      switch (type) {
+        case 'p': body = makePawn(mat, baseMat); break;
+        case 'r': body = makeRook(mat, baseMat); break;
+        case 'n': body = makeKnight(mat, baseMat); break;
+        case 'b': body = makeBishop(mat, baseMat); break;
+        case 'q': body = makeQueen(mat, baseMat); break;
+        case 'k': body = makeKing(mat, baseMat); break;
+        default: body = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 18), mat);
+      }
     }
     g.add(body);
-    g.scale.setScalar(PIECE_SCALE);
-    g.userData = { type, color, col, baseY: 0.04 };
+    // O loader já normaliza o GLB para a casa; escala antiga só vale para fallback.
+    g.scale.setScalar(usingStaunton ? 1.0 : PIECE_SCALE);
+    // Pretas ficam voltadas para o lado oposto; importante sobretudo no cavalo.
+    if (usingStaunton && color === 'b') body.rotation.y += Math.PI;
+    g.userData = { type, color, col, baseY: 0.04, staunton: usingStaunton };
+    body.traverse(function(o){
+      o.userData = o.userData || {};
+      o.userData.type = type; o.userData.color = color; o.userData.xpPieceRoot = g;
+    });
 
-    // Brilho interno suave (não anel embaixo)
+    // Brilho interno apenas no estilo futurista.
+    if (!classic) {
     const spr = new THREE.Sprite(new THREE.SpriteMaterial({
       map: glowTex(), color: col, transparent: true, opacity: 0.28,
       blending: THREE.AdditiveBlending, depthWrite: false
@@ -271,6 +398,7 @@
     spr.scale.set(1.4, 1.4, 1);
     spr.position.y = 0.55;
     g.add(spr);
+    }
     return g;
   }
 
@@ -451,6 +579,52 @@
         dot.rotation.x = -Math.PI / 2; dot.position.set(p.x, 0.08, p.z);
         highlightsGroup.add(dot);
       }
+    });
+  }
+
+  function clearMoveTrails() {
+    if (!moveTrailGroup) return;
+    while (moveTrailGroup.children.length) {
+      var o = moveTrailGroup.children[0];
+      moveTrailGroup.remove(o);
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) o.material.dispose();
+    }
+  }
+
+  function squaresAlongMove(from, to, type) {
+    var ff = from.charCodeAt(0) - 97, fr = parseInt(from[1], 10) - 1;
+    var tf = to.charCodeAt(0) - 97, tr = parseInt(to[1], 10) - 1;
+    var df = tf - ff, dr = tr - fr;
+    var steps = Math.max(Math.abs(df), Math.abs(dr));
+    if (type === 'n' || steps < 1 || !((df === 0) || (dr === 0) || Math.abs(df) === Math.abs(dr))) return [from, to];
+    var out = [];
+    for (var i = 0; i <= steps; i++) out.push(alg(ff + Math.round(df * i / steps), fr + Math.round(dr * i / steps)));
+    return out;
+  }
+
+  function addMoveTrail(move) {
+    if (!moveTrailGroup || !move) return;
+    // Mantém exatamente um trajeto por lado: o próximo lance do mesmo jogador substitui o anterior.
+    for (var i = moveTrailGroup.children.length - 1; i >= 0; i--) {
+      var old = moveTrailGroup.children[i];
+      if (old.userData.trailColorSide === move.color) {
+        moveTrailGroup.remove(old);
+        if (old.geometry) old.geometry.dispose();
+        if (old.material) old.material.dispose();
+      }
+    }
+    var color = move.color === 'w' ? currentTheme.w : currentTheme.b;
+    squaresAlongMove(move.from, move.to, move.piece).forEach(function (sq, idx, arr) {
+      var p = sqPos(sq);
+      var endpoint = idx === 0 || idx === arr.length - 1;
+      var plane = new THREE.Mesh(
+        new THREE.PlaneGeometry(SQUARE * 0.94, SQUARE * 0.94),
+        new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: endpoint ? 0.78 : 0.62, side: THREE.DoubleSide, depthWrite: false })
+      );
+      plane.rotation.x = -Math.PI / 2; plane.position.set(p.x, 0.073, p.z);
+      plane.userData.trailColorSide = move.color;
+      moveTrailGroup.add(plane);
     });
   }
 
@@ -666,6 +840,9 @@
   function afterMove(move) {
     resetIdleTimer();
     showLastMove(move.from, move.to);
+    addMoveTrail(move);
+    if (move.flags && (move.flags.includes('k') || move.flags.includes('q'))) playCastle();
+    if (move.flags && move.flags.includes('p')) playPromotion();
     addMoveList(move);
     atualizarStatus();
     atualizarCapturadas();
@@ -869,7 +1046,7 @@
   function novaPartida() {
     chess.reset();
     selected = null; legal = []; aiThinking = false; selectedMesh = null;
-    clearHighlights(); clearLastMove();
+    clearHighlights(); clearLastMove(); clearMoveTrails();
     loadPosition();
     document.getElementById('move-list').innerHTML = '';
     document.getElementById('captured-black').textContent = '';
@@ -900,15 +1077,31 @@
   function applyThemeCSS() {
     document.documentElement.style.setProperty('--accent-w', '#' + currentTheme.w.toString(16).padStart(6, '0'));
     document.documentElement.style.setProperty('--accent-b', '#' + currentTheme.b.toString(16).padStart(6, '0'));
+    document.documentElement.style.setProperty('--theme-w-soft', '#' + new THREE.Color(currentTheme.w).lerp(new THREE.Color(0x01040c), 0.78).getHexString());
+    document.documentElement.style.setProperty('--theme-b-soft', '#' + new THREE.Color(currentTheme.b).lerp(new THREE.Color(0x01040c), 0.82).getHexString());
   }
 
   function applyTheme(theme) {
     currentTheme = theme;
     applyThemeCSS();
+    var bg = new THREE.Color(theme.w).lerp(new THREE.Color(theme.b), 0.35).lerp(new THREE.Color(0x01040c), 0.88);
+    scene.background = bg.clone();
+    scene.fog.color.copy(bg);
+    boardGroup.children.forEach(function (o) {
+      if (o.userData && typeof o.userData.isLight === 'boolean') {
+        var base = new THREE.Color(o.userData.isLight ? 0x122840 : 0x0a1520);
+        var tint = new THREE.Color(o.userData.isLight ? theme.w : theme.b);
+        o.material.color.copy(base.lerp(tint, o.userData.isLight ? 0.16 : 0.11));
+        o.material.emissive.copy(new THREE.Color(0x020810).lerp(tint, 0.10));
+      }
+    });
+    if (moveTrailGroup) moveTrailGroup.children.forEach(function(o){ o.material.color.setHex(o.userData.trailColorSide === 'w' ? theme.w : theme.b); });
     if (scene.userData.lightW) scene.userData.lightW.color.setHex(theme.w);
     if (scene.userData.lightB) scene.userData.lightB.color.setHex(theme.b);
     const border = boardGroup.getObjectByName('border');
     if (border) border.material.emissive.setHex(theme.w);
+    var plat = scene.getObjectByName('platform');
+    if (plat) { plat.material.color.copy(new THREE.Color(0x020810).lerp(new THREE.Color(theme.b), 0.08)); plat.material.emissive.copy(new THREE.Color(0x001018).lerp(new THREE.Color(theme.w), 0.12)); }
     const ring = boardGroup.getObjectByName('ring');
     if (ring) ring.material.color.setHex(theme.w);
     loadPosition();
@@ -1062,6 +1255,8 @@
     if (cap) { playTone(190, 0.09, 'triangle', 0.055); setTimeout(() => playTone(150, 0.1, 'sine', 0.035), 30); }
     else { playTone(460, 0.05, 'sine', 0.03); setTimeout(() => playTone(680, 0.04, 'sine', 0.018), 35); }
   }
+  function playCastle() { playTone(260, 0.07, 'triangle', 0.035); setTimeout(function(){ playTone(390, 0.09, 'triangle', 0.028); }, 65); }
+  function playPromotion() { playTone(520, 0.07, 'sine', 0.03); setTimeout(function(){ playTone(780, 0.10, 'sine', 0.026); }, 70); setTimeout(function(){ playTone(1040, 0.12, 'sine', 0.02); }, 145); }
   function playCheck() {
     playTone(600, 0.07, 'square', 0.03);
     setTimeout(() => playTone(800, 0.08, 'sine', 0.022), 55);
@@ -1079,10 +1274,19 @@
     if (soundOn && !ambientNodes.length) startAmbient();
   }, { once: true });
 
+  function updatePlayCamera() {
+    var a = innerWidth / Math.max(innerHeight, 1);
+    if (a < 0.72) PLAY_CAM = { x: 0, y: 14.6, z: 12.8 };
+    else if (a > 1.45 && innerHeight < 650) PLAY_CAM = { x: 0, y: 10.8, z: 9.4 };
+    else PLAY_CAM = { x: 0, y: 12.2, z: 10.8 };
+  }
+
   function onResize() {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
+    updatePlayCamera();
+    if (!cineActive) { camera.position.set(PLAY_CAM.x, PLAY_CAM.y, PLAY_CAM.z); controls.target.set(PLAY_TARGET.x, PLAY_TARGET.y, PLAY_TARGET.z); controls.update(); }
   }
 
   function animate() {
@@ -1114,6 +1318,7 @@
   var PLAY_CAM = { x: 0, y: 12.2, z: 10.8 };
   var PLAY_TARGET = { x: 0, y: 0.25, z: 0 };
   var cineActive = false;
+  var cameraAnimToken = 0;
   var idleTimer = null;
   var IDLE_MS = 45000;
 
@@ -1127,12 +1332,19 @@
 
   function stopCinematic(restorePlay) {
     cineActive = false;
+    cameraAnimToken++; // cancela imediatamente qualquer animação antiga ainda agendada
     controls.enabled = true;
-    if (restorePlay) {
-      camera.position.set(PLAY_CAM.x, PLAY_CAM.y, PLAY_CAM.z);
-      controls.target.set(PLAY_TARGET.x, PLAY_TARGET.y, PLAY_TARGET.z);
-      controls.update();
-    }
+    updatePlayCamera();
+    if (restorePlay) animateCameraTo(PLAY_CAM, PLAY_TARGET, 160);
+  }
+
+  function bindGlobalActivity() {
+    ['pointerdown','touchstart','keydown','wheel'].forEach(function (ev) {
+      window.addEventListener(ev, function () {
+        if (cineActive === 'idle') stopCinematic(true);
+        resetIdleTimer();
+      }, { passive: true });
+    });
   }
 
   function easeInOut(t) {
@@ -1140,10 +1352,12 @@
   }
 
   function animateCameraTo(pos, target, duration, onDone) {
+    var myToken = ++cameraAnimToken;
     var sx = camera.position.x, sy = camera.position.y, sz = camera.position.z;
     var stx = controls.target.x, sty = controls.target.y, stz = controls.target.z;
     var t0 = performance.now();
     function step(now) {
+      if (myToken !== cameraAnimToken) return;
       var t = Math.min((now - t0) / duration, 1);
       var e = easeInOut(t);
       camera.position.set(sx + (pos.x - sx) * e, sy + (pos.y - sy) * e, sz + (pos.z - sz) * e);
@@ -1162,7 +1376,7 @@
     controls.target.set(0, 0.2, 0);
     controls.update();
     var t0 = performance.now();
-    var phase1 = 2800;
+    var phase1 = 1100;
     function orbit(now) {
       if (cineActive !== 'intro') return;
       var t = Math.min((now - t0) / phase1, 1);
@@ -1175,13 +1389,15 @@
       controls.update();
       if (t < 1) requestAnimationFrame(orbit);
       else {
-        animateCameraTo({ x: 2.5, y: 6, z: 4.5 }, { x: 0, y: 0.4, z: 0 }, 1600, function () {
-          setTimeout(function () {
-            animateCameraTo(PLAY_CAM, PLAY_TARGET, 1400, function () {
-              stopCinematic(true);
-              resetIdleTimer();
-            });
-          }, 400);
+        // v1.8: vai direto para a câmera de jogo; remove o zoom intermediário demorado.
+        animateCameraTo(PLAY_CAM, PLAY_TARGET, 650, function () {
+          cineActive = false;
+          controls.enabled = true;
+          updatePlayCamera();
+          camera.position.set(PLAY_CAM.x, PLAY_CAM.y, PLAY_CAM.z);
+          controls.target.set(PLAY_TARGET.x, PLAY_TARGET.y, PLAY_TARGET.z);
+          controls.update();
+          resetIdleTimer();
         });
       }
     }
@@ -1216,7 +1432,7 @@
         function () { setTimeout(focusNext, 700); }
       );
     }
-    animateCameraTo({ x: 8, y: 16, z: 8 }, { x: 0, y: 0.3, z: 0 }, 2000, function () {
+    animateCameraTo({ x: 8, y: 16, z: 8 }, { x: 0, y: 0.3, z: 0 }, 500, function () {
       setTimeout(focusNext, 300);
     });
   }
@@ -1227,6 +1443,44 @@
   function setParisSlots(n) {
     var el = document.getElementById('paris-slots');
     if (el) el.textContent = 'Jogadores: ' + n + ' / 2';
+  }
+
+  function enterParisDirect() {
+    // Entrada direta: não mostra o modal intermediário.
+    var modal = document.getElementById('paris-modal');
+    if (modal) modal.classList.add('hidden');
+    if (typeof Peer === 'undefined') {
+      showToast('PeerJS não carregou');
+      return;
+    }
+    parisReady = false;
+    isParisHost = false;
+    playerIsWhite = false;
+    try { if (conn) conn.close(); } catch(e) {}
+    try { if (peer) peer.destroy(); } catch(e) {}
+    peer = new Peer();
+    var settled = false;
+    peer.on('open', function(){
+      setParisStatus('Entrando na Sala Paris…');
+      conn = peer.connect(PARIS_ROOM_ID, { reliable:true });
+      var joinTimer = setTimeout(function(){
+        if (!parisReady && !settled) {
+          settled = true;
+          try { conn.close(); } catch(e) {}
+          try { peer.destroy(); } catch(e) {}
+          parisHost();
+        }
+      }, 1200);
+      conn.on('open', function(){ settled = true; clearTimeout(joinTimer); });
+      setupParisConn();
+    });
+    peer.on('error', function(){
+      if (!settled) {
+        settled = true;
+        try { peer.destroy(); } catch(e) {}
+        parisHost();
+      }
+    });
   }
 
   function openParisRoom() {
@@ -1262,6 +1516,7 @@
     }
     isParisHost = true;
     playerIsWhite = true;
+    var pm = document.getElementById('paris-modal'); if (pm) pm.classList.add('hidden');
     setParisStatus('Abrindo sala Paris…');
     try { if (peer) peer.destroy(); } catch (e) {}
     // ID fixo: o código da sala é sempre "Paris"
@@ -1386,3 +1641,4 @@
   bindParisUI();
   init();
 })();
+

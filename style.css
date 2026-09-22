@@ -260,3 +260,203 @@ body {
   }
 }
 .paris-btn { border-color: #ec4899 !important; }
+
+/* v1.1 — tema global + layout orientado ao tabuleiro */
+body {
+  background:
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--accent-w) 8%, transparent), transparent 38%),
+    radial-gradient(circle at 82% 78%, color-mix(in srgb, var(--accent-b) 7%, transparent), transparent 40%),
+    #01040c;
+  transition: background 0.45s ease;
+}
+
+@media (max-width: 720px) and (orientation: portrait) {
+  .logo { top: max(5px, env(safe-area-inset-top)); font-size: 11px; }
+  .status { top: 30px; }
+  .side-panel { top: 58px; width: 92px; }
+  .player-card { padding: 5px 6px; }
+  .bottom-bar { width: 96vw; max-width: 96vw; }
+  .bottom-bar button { padding: 7px 7px; font-size: 9px; }
+}
+
+@media (max-height: 650px) and (orientation: landscape) {
+  .logo { top: 4px; font-size: 10px; letter-spacing: 2px; }
+  .status { top: 25px; font-size: 9px; padding: 4px 8px; }
+  .side-panel { top: 42px; width: 92px; }
+  .side-panel.left { left: 4px; }
+  .side-panel.right { right: 4px; }
+  .player-card { padding: 5px 6px; gap: 4px; }
+  .avatar { width: 24px; height: 24px; }
+  .score { font-size: 13px; }
+  .bottom-bar { bottom: 3px; padding: 3px 5px; gap: 3px; max-width: 82vw; }
+  .bottom-bar button { min-height: 34px !important; padding: 5px 7px; font-size: 9px; }
+  .moves-panel { display: none !important; }
+}
+
+/* v1.2 — controles discretos e tabuleiro prioritário */
+.controls-toggle {
+  position:absolute; z-index:30; left:50%; bottom:max(6px, env(safe-area-inset-bottom, 0px));
+  transform:translateX(-50%); width:38px; height:34px; border-radius:10px;
+  border:1px solid var(--panel-border); background:rgba(4,12,24,.78); color:var(--accent-w);
+  display:none; cursor:pointer; font-size:16px;
+}
+@media (max-width:720px), (max-height:650px) {
+  .controls-toggle { display:block; }
+  .bottom-bar { padding:2px 4px; gap:2px; background:rgba(4,12,24,.48); backdrop-filter:blur(5px); }
+  .bottom-bar button { min-height:32px !important; padding:4px 6px; font-size:9px; }
+  body.controls-collapsed .bottom-bar { opacity:0; pointer-events:none; transform:translate(-50%, 120%); }
+  body:not(.controls-collapsed) .controls-toggle { bottom:52px; }
+  .bottom-bar { transition:opacity .18s ease, transform .18s ease; }
+}
+@media (max-height:650px) and (orientation:landscape) {
+  .bottom-bar { max-width:72vw; }
+  body:not(.controls-collapsed) .controls-toggle { bottom:43px; }
+}
+
+/* v1.3 — controles verticais no desktop; tabuleiro totalmente livre na base */
+@media (min-width: 721px) and (min-height: 651px) {
+  .bottom-bar {
+    left: 12px; right: auto; top: 50%; bottom: auto;
+    transform: translateY(-50%);
+    flex-direction: column; flex-wrap: nowrap; align-items: stretch;
+    width: 118px; max-width: 118px; padding: 7px;
+    gap: 6px; border-radius: 12px;
+  }
+  .bottom-bar button { width: 100%; min-height: 34px; padding: 7px 5px; white-space: normal; line-height: 1.15; }
+  #btn-sound, #btn-toasty { width: 100%; }
+  .moves-panel { bottom: 10px; }
+}
+
+
+/* v1.6 — desktop controls lateral, tabuleiro livre */
+@media (min-width: 769px) {
+  .controls {
+    position: fixed !important;
+    left: 14px !important;
+    right: auto !important;
+    bottom: 50% !important;
+    transform: translateY(50%) !important;
+    width: auto !important;
+    max-width: 190px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 7px !important;
+    z-index: 80 !important;
+  }
+  .controls button, .controls select {
+    width: 100% !important;
+  }
+  #controlsToggle, .controls-toggle, #menuToggle, .menu-toggle {
+    position: fixed !important;
+    left: 14px !important;
+    right: auto !important;
+    bottom: calc(50% - 190px) !important;
+    transform: none !important;
+    z-index: 81 !important;
+  }
+}
+
+/* v1.6 — Toasty nasce da lateral e fica apoiado no rodapé */
+#toasty, .toasty {
+  position: fixed !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  top: auto !important;
+  transform-origin: right bottom !important;
+  z-index: 120 !important;
+}
+#toasty img, .toasty img, img.toasty {
+  display: block;
+  max-height: min(54vh, 560px);
+  width: auto;
+  object-fit: contain;
+  object-position: right bottom;
+}
+@media (max-width: 768px) {
+  #toasty img, .toasty img, img.toasty { max-height: 38vh; }
+}
+
+/* v1.6 — interface mais ágil */
+.intro, .cinematic, .modal, .panel, .controls, #toasty, .toasty {
+  transition-duration: 0.25s !important;
+}
+
+/* v1.8 — desktop: menu SEMPRE lateral/vertical, aberto ou recolhido */
+@media (min-width: 721px) {
+  .bottom-bar {
+    position: fixed !important;
+    left: 14px !important;
+    right: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    width: 132px !important;
+    max-width: 132px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+    z-index: 80 !important;
+  }
+  .bottom-bar button {
+    width: 100% !important;
+    min-height: 34px !important;
+  }
+  .controls-toggle {
+    display: block !important;
+    position: fixed !important;
+    left: 14px !important;
+    right: auto !important;
+    top: calc(50% - 188px) !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: 82 !important;
+  }
+  body.controls-collapsed .bottom-bar {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translate(-160px,-50%) !important;
+  }
+  body:not(.controls-collapsed) .controls-toggle {
+    top: calc(50% - 230px) !important;
+  }
+}
+
+/* v1.9 — desktop: painel VOCÊ -> botão de recolher -> menu vertical */
+@media (min-width: 721px) {
+  .controls-toggle {
+    position: fixed !important;
+    left: 14px !important;
+    top: 118px !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    margin: 0 !important;
+    z-index: 82 !important;
+  }
+  .bottom-bar {
+    position: fixed !important;
+    left: 14px !important;
+    top: 162px !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: 190px !important;
+    max-height: calc(100vh - 176px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+  }
+  body.controls-collapsed .bottom-bar {
+    transform: translateX(-220px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  body:not(.controls-collapsed) .controls-toggle {
+    top: 118px !important;
+  }
+}
