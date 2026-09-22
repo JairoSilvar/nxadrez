@@ -504,3 +504,13 @@ body {
   #toasty img,.toasty img{width:112px!important;max-height:28vh!important}
   .modal-box{max-height:82vh!important;overflow:auto!important}.piece-options,.board-options{grid-template-columns:1fr!important}
 }
+
+/* v6 — enquadramento mobile validado para viewport estreito: canvas não é recortado por UI */
+@media (max-width:720px) and (orientation:portrait){
+  #canvas-wrap{inset:0!important}
+  .logo{top:max(3px,env(safe-area-inset-top))!important;font-size:9px!important}
+  .side-panel{top:max(1px,env(safe-area-inset-top))!important;width:29vw!important}
+  .status{top:max(30px,calc(env(safe-area-inset-top) + 29px))!important;font-size:7px!important}
+  .bottom-bar{max-height:82px!important;bottom:max(42px,calc(env(safe-area-inset-bottom) + 42px))!important}
+  .controls-toggle{bottom:max(4px,env(safe-area-inset-bottom))!important}
+}

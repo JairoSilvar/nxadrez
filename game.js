@@ -1,4 +1,4 @@
-var XADREZ_PRO_BUILD_V5 = "5-20260922";
+var XADREZ_PRO_BUILD_V6 = "6-20260922";
 /* v1.7 — Staunton GLB real, local, com fallback procedural */
 var XPStaunton = (function () {
   var ready = false, failed = false, templates = {};
@@ -82,6 +82,32 @@ XPStaunton.load(function(ok) {
   }
 });
 
+// v6 — bibliotecas de GEOMETRIA reais. Cada opção abaixo carrega modelos diferentes,
+// não apenas outra cor/material sobre o mesmo mesh.
+var XPLightPieces = (function(){
+  var templates={}, loading=false, ready=false, wait=[];
+  var types=['pawn','rook','knight','bishop','queen','king'];
+  function normalize(root){ var b=new THREE.Box3().setFromObject(root),sz=new THREE.Vector3(),c=new THREE.Vector3(); b.getSize(sz);b.getCenter(c);root.position.x-=c.x;root.position.z-=c.z;root.position.y-=b.min.y;root.scale.multiplyScalar(Math.min(.78/Math.max(sz.x,sz.z,0.001),1.55/Math.max(sz.y,.001)));root.updateMatrixWorld(true);return root; }
+  function load(done){ if(ready){done&&done(true);return;} if(done)wait.push(done); if(loading)return; loading=true; var left=types.length;
+    types.forEach(function(t){new THREE.GLTFLoader().load('models/sets/light/'+t+'.glb',function(g){templates[t]=normalize(g.scene.clone(true));if(--left===0){ready=true;loading=false;wait.splice(0).forEach(function(f){f(true);});}},undefined,function(){if(--left===0){loading=false;wait.splice(0).forEach(function(f){f(false);});}});}); }
+  function create(type,mat,meta){var n={p:'pawn',r:'rook',n:'knight',b:'bishop',q:'queen',k:'king'}[type]||type;if(!ready||!templates[n])return null;var x=templates[n].clone(true);x.traverse(function(o){if(o.isMesh){o.material=mat;o.castShadow=true;o.receiveShadow=true;o.userData=Object.assign(o.userData||{},meta||{});}});return x;}
+  return {load:load,create:create,isReady:function(){return ready;}};
+})();
+var XPPremiumPieces = (function(){
+  var templates={},ready=false,loading=false,wait=[];
+  function norm(root){var b=new THREE.Box3().setFromObject(root),sz=new THREE.Vector3(),c=new THREE.Vector3();b.getSize(sz);b.getCenter(c);root.position.x-=c.x;root.position.z-=c.z;root.position.y-=b.min.y;root.scale.multiplyScalar(Math.min(.78/Math.max(sz.x,sz.z,.001),1.55/Math.max(sz.y,.001)));root.updateMatrixWorld(true);return root;}
+  function load(done){if(ready){done&&done(true);return;}if(done)wait.push(done);if(loading)return;loading=true;new THREE.GLTFLoader().load('models/ABeautifulGame.glb',function(g){
+    function one(name){var o=g.scene.getObjectByName(name);return o?norm(o.clone(true)):null;}
+    templates.k=one('King_W');templates.q=one('Queen_W');templates.r=one('Castle_W1');templates.n=one('Knight_W1');templates.b=one('Bishop_W1');
+    var pg=new THREE.Group(),a=g.scene.getObjectByName('Pawn_Top_W1'),b=g.scene.getObjectByName('Pawn_Body_W1');if(a)pg.add(a.clone(true));if(b)pg.add(b.clone(true));templates.p=norm(pg);
+    ready=['p','r','n','b','q','k'].every(function(t){return !!templates[t];});loading=false;wait.splice(0).forEach(function(f){f(ready);});
+  },undefined,function(){loading=false;wait.splice(0).forEach(function(f){f(false);});});}
+  function create(t,mat,meta){if(!ready||!templates[t])return null;var x=templates[t].clone(true);x.traverse(function(o){if(o.isMesh){o.material=mat;o.castShadow=true;o.receiveShadow=true;o.userData=Object.assign(o.userData||{},meta||{});}});return x;}
+  return {load:load,create:create,isReady:function(){return ready;}};
+})();
+
+// v6 — tabuleiro 3D real opcional (asset enviado pelo usuário).
+var XPBoardAsset=(function(){var tpl=null,loading=false,wait=[];function load(done){if(tpl){done&&done(tpl.clone(true));return;}if(done)wait.push(done);if(loading)return;loading=true;new THREE.GLTFLoader().load('models/boards/Chess.glb',function(g){var o=g.scene.getObjectByName('Board')||g.scene;var x=o.clone(true);var b=new THREE.Box3().setFromObject(x),sz=new THREE.Vector3(),c=new THREE.Vector3();b.getSize(sz);b.getCenter(c);x.position.x-=c.x;x.position.z-=c.z;x.position.y-=b.min.y;var sc=(1.24*8.35)/Math.max(sz.x,sz.z,.001);x.scale.multiplyScalar(sc);x.traverse(function(m){if(m.isMesh){m.receiveShadow=true;m.castShadow=true;}});tpl=x;loading=false;wait.splice(0).forEach(function(f){f(tpl.clone(true));});},undefined,function(){loading=false;wait=[];});}return{load:load};})();
 // Xadrez Pro 3D — Nova versão
 // Visual neon + IA + temas + Toasty + animação por peça
 (function () {
@@ -140,7 +166,7 @@ function rebuildPiecesWithStaunton() {
     scene.background = new THREE.Color(0x01040c);
     scene.fog = new THREE.FogExp2(0x01040c, 0.024);
 
-    camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 120);
+    camera = new THREE.PerspectiveCamera((innerWidth/innerHeight)<0.72 ? 48 : 35, innerWidth / innerHeight, 0.1, 120);
     camera.position.set(0, 12.2, 10.8);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -190,7 +216,9 @@ function rebuildPiecesWithStaunton() {
     buildBoard();
     buildPlatform();
     buildParticles();
-    loadPosition();
+    if(pieceStyle==='classico') XPLightPieces.load(function(){loadPosition();});
+    else if(pieceStyle==='premium') XPPremiumPieces.load(function(){loadPosition();});
+    else loadPosition();
     applyThemeCSS();
     bindUI();
     initAudio();
@@ -225,9 +253,10 @@ function rebuildPiecesWithStaunton() {
       btn.onclick = function(){
         pieceStyle = btn.dataset.pieceStyle;
         localStorage.setItem('xp-piece-style', pieceStyle);
-        loadPosition();
-        document.getElementById('pieces-modal').classList.add('hidden');
-        showToast('Peças: ' + (btn.dataset.label || btn.textContent));
+        var finish=function(){ loadPosition(); document.getElementById('pieces-modal').classList.add('hidden'); showToast('Peças: ' + (btn.dataset.label || btn.textContent)); };
+        if(pieceStyle==='classico') XPLightPieces.load(finish);
+        else if(pieceStyle==='premium') XPPremiumPieces.load(finish);
+        else finish();
       };
     });
     var boardBtn = document.getElementById('btn-board');
@@ -335,6 +364,19 @@ function rebuildPiecesWithStaunton() {
     );
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; ring.name = 'ring';
     boardGroup.add(ring);
+    // v6: diferenças estruturais reais entre tabuleiros, não apenas cores.
+    if (boardStyle === 'medieval') {
+      var towers = [[-5.25,-5.25],[5.25,-5.25],[-5.25,5.25],[5.25,5.25]];
+      towers.forEach(function(q){var t=new THREE.Mesh(new THREE.CylinderGeometry(.34,.46,.42,8),new THREE.MeshStandardMaterial({color:0x4b3826,roughness:.78}));t.position.set(q[0],.12,q[1]);boardGroup.add(t);});
+    } else if (boardStyle === 'cyber') {
+      for(var i=0;i<4;i++){var rail=new THREE.Mesh(new THREE.BoxGeometry(i<2?10.8:.08,.12,i<2?.08:10.8),new THREE.MeshBasicMaterial({color:i%2?currentTheme.b:currentTheme.w}));rail.position.set(i===2?-5.25:i===3?5.25:0,.04,i===0?-5.25:i===1?5.25:0);boardGroup.add(rail);}
+    } else if (boardStyle === 'madeira') {
+      XPBoardAsset.load(function(real){ real.position.y=-.18; real.name='real-board-asset'; boardGroup.add(real); });
+    } else if (boardStyle === 'minimal') {
+      border.scale.set(.97,.45,.97); ring.visible=false;
+    } else if (boardStyle === 'crystal') {
+      border.material.opacity=.45; border.scale.set(1.025,.35,1.025);
+    }
   }
 
   function buildPlatform() {
@@ -399,7 +441,10 @@ function rebuildPiecesWithStaunton() {
     var classic = pieceStyle === 'classico' || pieceStyle === 'premium';
     // v1.8: usa de fato a geometria Staunton do GLB quando carregada.
     // A fábrica procedural abaixo permanece somente como fallback.
-    let body = XPStaunton.create(type, mat, { type: type, color: color });
+    let body = null;
+    if (pieceStyle === 'classico') body = XPLightPieces.create(type, mat, {type:type,color:color});
+    else if (pieceStyle === 'premium') body = XPPremiumPieces.create(type, mat, {type:type,color:color});
+    else if (pieceStyle !== 'royal' && pieceStyle !== 'cyber') body = XPStaunton.create(type, mat, { type: type, color: color });
     const usingStaunton = !!body;
     if (!body) {
       switch (type) {
@@ -417,7 +462,7 @@ function rebuildPiecesWithStaunton() {
     g.scale.setScalar(usingStaunton ? 1.0 : PIECE_SCALE);
     // Orientação física: cada exército olha para o oponente. O cavalo recebe a mesma regra
     // independentemente da perspectiva da câmera; a câmera pode girar, a peça não perde a frente.
-    var facing = (color === 'w') ? 0 : Math.PI;
+    var facing = (type === 'n') ? ((color === 'w') ? -Math.PI/2 : Math.PI/2) : ((color === 'w') ? 0 : Math.PI);
     g.userData.facingY = facing;
     g.userData = { type:type, color:color, col:col, baseY:0.04, staunton:usingStaunton, facingY:facing };
     g.rotation.y = facing;
@@ -1057,8 +1102,9 @@ function rebuildPiecesWithStaunton() {
       el.textContent = 'Empate';
       wasInCheck = false;
     } else if (chess.in_check()) {
-      const who = chess.turn() === 'w' ? 'Você' : (gameMode === 'local' ? 'Adversário' : 'Máquina');
-      el.textContent = 'Xeque! Vez de ' + who;
+      const myTurn = chess.turn() === (playerIsWhite ? 'w' : 'b');
+      const who = myTurn ? 'você' : (gameMode.indexOf('ai-')===0 ? 'máquina' : 'adversário');
+      el.textContent = 'Xeque! ' + (myTurn ? 'É a sua vez' : 'Vez do ' + who);
       el.classList.add('xeque');
       // Toasty só ao ENTRAR em xeque (não a cada atualização de status)
       if (!wasInCheck) playCheck();
@@ -1066,8 +1112,8 @@ function rebuildPiecesWithStaunton() {
       if (chess.turn() === 'w') cardW.classList.add('active-turn');
       else cardB.classList.add('active-turn');
     } else {
-      const who = chess.turn() === 'w' ? 'Você' : (gameMode === 'local' ? 'Adversário' : 'Máquina');
-      el.textContent = 'Vez de ' + who;
+      const myTurn = chess.turn() === (playerIsWhite ? 'w' : 'b');
+      el.textContent = myTurn ? 'É a sua vez' : (gameMode.indexOf('ai-')===0 ? 'Vez da máquina' : 'Vez do adversário');
       wasInCheck = false;
       if (chess.turn() === 'w') cardW.classList.add('active-turn');
       else cardB.classList.add('active-turn');
@@ -1344,13 +1390,14 @@ function rebuildPiecesWithStaunton() {
     var a = innerWidth / Math.max(innerHeight, 1);
     var sign = playerIsWhite ? 1 : -1;
     // Portrait: afasta a câmera para que as 64 casas e a moldura caibam entre topo e controles.
-    if (a < 0.72) PLAY_CAM = { x: 0, y: 19.4, z: 17.6 * sign };
+    if (a < 0.72) PLAY_CAM = { x: 0, y: 25.5, z: 15.5 * sign };
     else if (a > 1.45 && innerHeight < 650) PLAY_CAM = { x: 0, y: 10.8, z: 9.4 * sign };
     else PLAY_CAM = { x: 0, y: 12.2, z: 10.8 * sign };
   }
 
   function onResize() {
     camera.aspect = innerWidth / innerHeight;
+    camera.fov = camera.aspect < 0.72 ? 48 : 35;
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
     updatePlayCamera();
@@ -1442,13 +1489,17 @@ function rebuildPiecesWithStaunton() {
   }
 
   function playIntroCinematic() {
+    // v6: no celular vertical entra direto no enquadramento jogável; nada de zoom que corte o tabuleiro.
+    if (innerWidth <= 720 && innerHeight > innerWidth) {
+      cineActive=false; controls.enabled=true; updatePlayCamera(); camera.position.set(PLAY_CAM.x,PLAY_CAM.y,PLAY_CAM.z); controls.target.set(PLAY_TARGET.x,PLAY_TARGET.y,PLAY_TARGET.z); controls.update(); resetIdleTimer(); return;
+    }
     cineActive = 'intro';
     controls.enabled = false;
     camera.position.set(0, 28, 32);
     controls.target.set(0, 0.2, 0);
     controls.update();
     var t0 = performance.now();
-    var phase1 = 1100;
+    var phase1 = 550;
     function orbit(now) {
       if (cineActive !== 'intro') return;
       var t = Math.min((now - t0) / phase1, 1);
@@ -1462,7 +1513,7 @@ function rebuildPiecesWithStaunton() {
       if (t < 1) requestAnimationFrame(orbit);
       else {
         // v1.8: vai direto para a câmera de jogo; remove o zoom intermediário demorado.
-        animateCameraTo(PLAY_CAM, PLAY_TARGET, 650, function () {
+        animateCameraTo(PLAY_CAM, PLAY_TARGET, 325, function () {
           cineActive = false;
           controls.enabled = true;
           updatePlayCamera();

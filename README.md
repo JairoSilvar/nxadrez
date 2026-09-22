@@ -131,7 +131,7 @@ README.md
 - Layout vertical mobile reforça o tabuleiro como área principal e mantém informações/controles na região inferior.
 
 
-## v5 — 22/09/2026
+## v6 — 22/09/2026
 - Base: v3 preservada; nenhum modo/recurso removido.
 - model.glb continua padrão na abertura.
 - 7 acabamentos de peças com troca real e persistente.
@@ -140,4 +140,14 @@ README.md
 - Mobile portrait: câmera recalculada por lado para enquadrar o tabuleiro inteiro; VOCÊ/ADVERSÁRIO junto ao título; menu ☰/× centralizado abaixo.
 - Assistência de toque legal da v3 preservada.
 - Toasty P2P da v3 preservado.
-- Cache atualizado para v5.
+- Cache atualizado para v6.
+
+## v6 — revisão estrutural mobile / peças / tabuleiros
+- Base preservada da v5, sem remoção dos modos e recursos existentes.
+- Mobile portrait entra diretamente na câmera de jogo e enquadra o tabuleiro inteiro; intro cinematográfica não pode recortar o tabuleiro no celular.
+- Perspectiva online segue `playerIsWhite`: brancas e pretas veem seu próprio lado embaixo.
+- Status relativo ao jogador: “É a sua vez”, “Vez do adversário” e “Vez da máquina”.
+- Cavalo recebe orientação física própria: branco para o campo preto e preto para o campo branco.
+- Conjuntos de peças com geometrias reais diferentes: `model.glb`, seis GLBs leves separados e `ABeautifulGame.glb`; Royal/Cyber mantêm escultura procedural própria.
+- Tabuleiro Tournament Wood utiliza `models/boards/Chess.glb`; Medieval/Cyber/Minimal/Crystal alteram também a estrutura 3D, não só a cor.
+- Service Worker v6 inclui os novos assets e elimina caches anteriores.
