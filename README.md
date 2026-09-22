@@ -131,5 +131,13 @@ README.md
 - Layout vertical mobile reforça o tabuleiro como área principal e mantém informações/controles na região inferior.
 
 
-## v4 (2026-09-22)
-Baseada integralmente na v3. Mantém recursos existentes; model.glb padrão; seis acabamentos de peças; sete estilos de tabuleiro; mobile portrait refinado; toque assistido e Toasty P2P preservados.
+## v5 — 22/09/2026
+- Base: v3 preservada; nenhum modo/recurso removido.
+- model.glb continua padrão na abertura.
+- 7 acabamentos de peças com troca real e persistente.
+- 7 estilos de tabuleiro independentes de tema/peças.
+- Correção da orientação: peças pretas/brancas mantêm frente oposta após animações; cavalo não volta para rotação zero.
+- Mobile portrait: câmera recalculada por lado para enquadrar o tabuleiro inteiro; VOCÊ/ADVERSÁRIO junto ao título; menu ☰/× centralizado abaixo.
+- Assistência de toque legal da v3 preservada.
+- Toasty P2P da v3 preservado.
+- Cache atualizado para v5.

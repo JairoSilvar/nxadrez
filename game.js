@@ -1,4 +1,4 @@
-var XADREZ_PRO_BUILD_V4 = "4-20260922";
+var XADREZ_PRO_BUILD_V5 = "5-20260922";
 /* v1.7 — Staunton GLB real, local, com fallback procedural */
 var XPStaunton = (function () {
   var ready = false, failed = false, templates = {};
@@ -222,14 +222,26 @@ function rebuildPiecesWithStaunton() {
     var pieceClose = document.getElementById('btn-close-pieces');
     if (pieceClose) pieceClose.onclick = function () { document.getElementById('pieces-modal').classList.add('hidden'); };
     document.querySelectorAll('#pieces-modal [data-piece-style]').forEach(function(btn){
-      btn.onclick = function(){ pieceStyle = btn.dataset.pieceStyle; localStorage.setItem('xp-piece-style', pieceStyle); loadPosition(); document.getElementById('pieces-modal').classList.add('hidden'); showToast('Peças: ' + btn.textContent.replace(/^.*—\s*/,'')); };
+      btn.onclick = function(){
+        pieceStyle = btn.dataset.pieceStyle;
+        localStorage.setItem('xp-piece-style', pieceStyle);
+        loadPosition();
+        document.getElementById('pieces-modal').classList.add('hidden');
+        showToast('Peças: ' + (btn.dataset.label || btn.textContent));
+      };
     });
     var boardBtn = document.getElementById('btn-board');
     if (boardBtn) boardBtn.onclick = function(){ document.getElementById('board-modal').classList.remove('hidden'); };
     var boardClose = document.getElementById('btn-close-board');
     if (boardClose) boardClose.onclick = function(){ document.getElementById('board-modal').classList.add('hidden'); };
     document.querySelectorAll('#board-modal [data-board-style]').forEach(function(btn){
-      btn.onclick = function(){ boardStyle = btn.dataset.boardStyle; localStorage.setItem('xp-board-style', boardStyle); buildBoard(); document.getElementById('board-modal').classList.add('hidden'); showToast('Tabuleiro: ' + btn.textContent); };
+      btn.onclick = function(){
+        boardStyle = btn.dataset.boardStyle;
+        localStorage.setItem('xp-board-style', boardStyle);
+        buildBoard();
+        document.getElementById('board-modal').classList.add('hidden');
+        showToast('Tabuleiro: ' + (btn.dataset.label || btn.textContent));
+      };
     });
     var controlsToggle = document.getElementById('btn-controls-toggle');
     if (controlsToggle) controlsToggle.onclick = function () {
@@ -277,22 +289,29 @@ function rebuildPiecesWithStaunton() {
 
   function buildBoard() {
     while (boardGroup.children.length) boardGroup.remove(boardGroup.children[0]);
-    var bp = {
-      neon:[0x122840,0x0a1520,0x00141e], wood:[0xb88755,0x5a321f,0x3a2115],
-      marble:[0xe4e1d8,0x4b5563,0xb8b2a8], medieval:[0x8b7355,0x40362c,0x2b241d],
-      crystal:[0x8ad9e8,0x285a70,0x17384a], cyber:[0x112a38,0x260c35,0x071018], minimal:[0xd5d8dc,0x4c5664,0x222831]
-    }[boardStyle] || [0x122840,0x0a1520,0x00141e];
     const geo = new THREE.BoxGeometry(SQUARE * 0.96, 0.12, SQUARE * 0.96);
     const off = 3.5 * SQUARE;
     for (let r = 0; r < 8; r++) {
       for (let f = 0; f < 8; f++) {
         const isLight = (r + f) % 2 === 1;
+        var bp = {
+          neon:      {l:0x122840,d:0x0a1520, e1:0x061020,e2:0x030810, metal:.20,rough:.35,coat:.50,ei:.35},
+          madeira:   {l:0xc89b68,d:0x5b321d, e1:0x000000,e2:0x000000, metal:.02,rough:.48,coat:.62,ei:0},
+          marmore:   {l:0xe7e4dc,d:0x374151, e1:0x050505,e2:0x020205, metal:.05,rough:.20,coat:.95,ei:.04},
+          medieval:  {l:0x9b7b50,d:0x3f3328, e1:0x080502,e2:0x020201, metal:.10,rough:.62,coat:.20,ei:.03},
+          crystal:   {l:0x9eeaff,d:0x285e78, e1:currentTheme.w,e2:currentTheme.b, metal:.02,rough:.08,coat:1,ei:.16},
+          cyber:     {l:0x062b38,d:0x21072d, e1:currentTheme.w,e2:currentTheme.b, metal:.55,rough:.16,coat:1,ei:.65},
+          minimal:   {l:0xd8dee9,d:0x485260, e1:0x000000,e2:0x000000, metal:0,rough:.72,coat:.05,ei:0}
+        }[boardStyle] || null;
+        if (!bp) bp = {l:0x122840,d:0x0a1520,e1:0x061020,e2:0x030810,metal:.2,rough:.35,coat:.5,ei:.35};
         const mat = new THREE.MeshPhysicalMaterial({
-          color: isLight ? bp[0] : bp[1],
-          metalness: 0.2, roughness: 0.35,
-          clearcoat: 0.5, clearcoatRoughness: 0.2,
-          emissive: isLight ? 0x061020 : 0x030810,
-          emissiveIntensity: 0.35
+          color: isLight ? bp.l : bp.d,
+          metalness: bp.metal, roughness: bp.rough,
+          clearcoat: bp.coat, clearcoatRoughness: Math.min(.45,bp.rough),
+          emissive: isLight ? bp.e1 : bp.e2,
+          emissiveIntensity: bp.ei,
+          transparent: boardStyle === 'crystal', opacity: boardStyle === 'crystal' ? .86 : 1,
+          transmission: boardStyle === 'crystal' ? .18 : 0
         });
         const sq = new THREE.Mesh(geo, mat);
         sq.position.set(f * SQUARE - off, 0, (7 - r) * SQUARE - off);
@@ -304,7 +323,7 @@ function rebuildPiecesWithStaunton() {
     const border = new THREE.Mesh(
       new THREE.BoxGeometry(SQUARE * 8.4, 0.1, SQUARE * 8.4),
       new THREE.MeshPhysicalMaterial({
-        color: bp[2], emissive: currentTheme.w, emissiveIntensity: 0.7,
+        color: 0x00141e, emissive: currentTheme.w, emissiveIntensity: 0.7,
         metalness: 0.85, roughness: 0.15, transparent: true, opacity: 0.9
       })
     );
@@ -357,30 +376,27 @@ function rebuildPiecesWithStaunton() {
     const col = isW ? currentTheme.w : currentTheme.b;
     const em = isW ? currentTheme.emW : currentTheme.emB;
 
-    // A = Staunton clássico; B = Staunton futurista. A geometria é compartilhada e o material muda.
-    const classic = pieceStyle === 'classico' || pieceStyle === 'padrao';
-    const crystal = pieceStyle === 'crystal';
-    const royal = pieceStyle === 'royal';
-    const obsidian = pieceStyle === 'obsidian';
+    // v5: conjuntos visuais realmente distintos; modelo padrão continua sendo model.glb.
+    var presets = {
+      padrao:   {color:col, emissive:em, ei:.28, metal:.12, rough:.24, trans:.04, opacity:1, coat:.86},
+      classico: {color:isW?0xf1dfbd:0x241b18, emissive:0x000000, ei:0, metal:.02, rough:.38, trans:0, opacity:1, coat:.55},
+      premium:  {color:isW?0xfff4d6:0x111827, emissive:isW?0x2b210d:0x02040a, ei:.06, metal:.18, rough:.18, trans:0, opacity:1, coat:1},
+      royal:    {color:isW?0xffd34d:0x6d28d9, emissive:isW?0x6b3f00:0x220044, ei:.22, metal:.78, rough:.16, trans:0, opacity:1, coat:1},
+      crystal:  {color:col, emissive:em, ei:.62, metal:.02, rough:.07, trans:.38, opacity:.88, coat:1},
+      cyber:    {color:isW?0x00e5ff:0xff2d9b, emissive:isW?0x00a6c8:0xb00066, ei:.95, metal:.28, rough:.10, trans:.12, opacity:.96, coat:1},
+      obsidian: {color:isW?0x64748b:0x08090d, emissive:isW?0x0f172a:0x16001f, ei:.18, metal:.66, rough:.12, trans:0, opacity:1, coat:1}
+    };
+    var pp = presets[pieceStyle] || presets.padrao;
     const mat = new THREE.MeshPhysicalMaterial({
-      color: obsidian ? 0x161622 : (royal ? (isW ? 0xffd66b : 0xb88718) : col),
-      emissive: classic ? 0x000000 : em,
-      emissiveIntensity: crystal ? 0.82 : (classic ? 0.0 : 0.55),
-      metalness: royal ? 0.82 : (classic ? 0.22 : 0.05),
-      roughness: royal ? 0.18 : (classic ? 0.30 : 0.12),
-      transmission: crystal ? 0.18 : (classic ? 0.0 : 0.22),
-      clearcoat: classic ? 0.72 : 1.0,
-      clearcoatRoughness: classic ? 0.16 : 0.05,
-      transparent: crystal || (!classic && !royal && !obsidian),
-      opacity: crystal ? 0.97 : 1.0,
-      side: THREE.DoubleSide
+      color: pp.color, emissive: pp.emissive, emissiveIntensity: pp.ei,
+      metalness: pp.metal, roughness: pp.rough, transmission: pp.trans,
+      clearcoat: pp.coat, clearcoatRoughness: .06,
+      transparent: pp.opacity < 1 || pp.trans > 0, opacity: pp.opacity, side: THREE.DoubleSide
     });
     const baseMat = mat.clone();
-    baseMat.transmission = classic ? 0 : 0.16;
-    baseMat.opacity = classic ? 1 : 0.98;
-    baseMat.emissiveIntensity = classic ? 0 : 0.7;
-    baseMat.roughness = 0.12;
-
+    baseMat.roughness = Math.min(.42, pp.rough + .06);
+    baseMat.emissiveIntensity = pp.ei * 1.08;
+    var classic = pieceStyle === 'classico' || pieceStyle === 'premium';
     // v1.8: usa de fato a geometria Staunton do GLB quando carregada.
     // A fábrica procedural abaixo permanece somente como fallback.
     let body = XPStaunton.create(type, mat, { type: type, color: color });
@@ -399,18 +415,21 @@ function rebuildPiecesWithStaunton() {
     g.add(body);
     // O loader já normaliza o GLB para a casa; escala antiga só vale para fallback.
     g.scale.setScalar(usingStaunton ? 1.0 : PIECE_SCALE);
-    // Pretas ficam voltadas para o lado oposto; importante sobretudo no cavalo.
-    if (usingStaunton && color === 'b') body.rotation.y += Math.PI;
-    g.userData = { type, color, col, baseY: 0.04, staunton: usingStaunton };
+    // Orientação física: cada exército olha para o oponente. O cavalo recebe a mesma regra
+    // independentemente da perspectiva da câmera; a câmera pode girar, a peça não perde a frente.
+    var facing = (color === 'w') ? 0 : Math.PI;
+    g.userData.facingY = facing;
+    g.userData = { type:type, color:color, col:col, baseY:0.04, staunton:usingStaunton, facingY:facing };
+    g.rotation.y = facing;
     body.traverse(function(o){
       o.userData = o.userData || {};
       o.userData.type = type; o.userData.color = color; o.userData.xpPieceRoot = g;
     });
 
-    // Brilho interno apenas no estilo futurista.
-    if (!classic || crystal) {
+    // Crystal/Cyber: brilho interno ascendente; Crystal é menos transparente e mais legível.
+    if (pieceStyle === 'crystal' || pieceStyle === 'cyber') {
     const spr = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: glowTex(), color: col, transparent: true, opacity: 0.28,
+      map: glowTex(), color: pp.color, transparent: true, opacity: pieceStyle === 'crystal' ? 0.52 : 0.36,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     spr.scale.set(1.4, 1.4, 1);
@@ -854,7 +873,7 @@ function rebuildPiecesWithStaunton() {
       if (t < 1) requestAnimationFrame(step);
       else {
         mesh.position.set(target.x, 0.04, target.z);
-        mesh.rotation.y = 0;
+        mesh.rotation.y = (mesh.userData && typeof mesh.userData.facingY === 'number') ? mesh.userData.facingY : startRotY;
         delete pieceMap[from];
         pieceMap[to] = mesh;
         mesh.userData.square = to;
@@ -1323,9 +1342,11 @@ function rebuildPiecesWithStaunton() {
 
   function updatePlayCamera() {
     var a = innerWidth / Math.max(innerHeight, 1);
-    if (a < 0.72) PLAY_CAM = { x: 0, y: 19.2, z: 16.8 };
-    else if (a > 1.45 && innerHeight < 650) PLAY_CAM = { x: 0, y: 10.8, z: 9.4 };
-    else PLAY_CAM = { x: 0, y: 12.2, z: 10.8 };
+    var sign = playerIsWhite ? 1 : -1;
+    // Portrait: afasta a câmera para que as 64 casas e a moldura caibam entre topo e controles.
+    if (a < 0.72) PLAY_CAM = { x: 0, y: 19.4, z: 17.6 * sign };
+    else if (a > 1.45 && innerHeight < 650) PLAY_CAM = { x: 0, y: 10.8, z: 9.4 * sign };
+    else PLAY_CAM = { x: 0, y: 12.2, z: 10.8 * sign };
   }
 
   function onResize() {
@@ -1498,13 +1519,10 @@ function rebuildPiecesWithStaunton() {
 
   function applyPlayerPerspective() {
     // Cada jogador vê o próprio exército na parte inferior do tabuleiro.
-    var portrait = innerWidth < 721 && innerHeight > innerWidth;
-    var dist = portrait ? 16.8 : 10.8;
-    var z = playerIsWhite ? dist : -dist;
-    PLAY_CAM.z = z;
-    if (portrait) PLAY_CAM.y = 19.2;
+    updatePlayCamera();
+    var z = PLAY_CAM.z;
     if (!cineActive && camera && controls) {
-      camera.position.set(0, portrait ? 19.2 : 12.2, z);
+      camera.position.set(PLAY_CAM.x, PLAY_CAM.y, z);
       controls.target.set(0, 0.25, 0);
       controls.update();
     }

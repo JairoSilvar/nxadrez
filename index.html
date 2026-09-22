@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Xadrez Pro 3D v4</title>
+  <title>Xadrez Pro 3D v5</title>
   <meta name="theme-color" content="#01040c" />
   <meta name="description" content="Xadrez Pro 3D — visual neon holográfico, IA e modos de jogo" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -21,7 +21,7 @@
 </head>
 <body>
   <div id="ui">
-    <div class="logo">XADREZ <span>PRO</span> <small>3D v4</small></div>
+    <div class="logo">XADREZ <span>PRO</span> <small>3D v5</small></div>
 
     <div class="side-panel left">
       <div class="player-card" id="card-white">
@@ -75,32 +75,34 @@
     <div id="pieces-modal" class="modal hidden">
       <div class="modal-box">
         <div class="modal-title">Estilo das peças 3D</div>
-        <div class="mode-btns">
-          <button type="button" data-piece-style="padrao">A — Padrão (model.glb)</button>
-          <button type="button" data-piece-style="classico">B — Staunton Clássico</button>
-          <button type="button" data-piece-style="futurista">C — Cyber / Futurista</button>
-          <button type="button" data-piece-style="crystal">D — Crystal Neon</button>
-          <button type="button" data-piece-style="royal">E — Royal Dourado</button>
-          <button type="button" data-piece-style="obsidian">F — Obsidiana</button>
+        <div class="mode-btns piece-options">
+          <button type="button" data-piece-style="padrao" data-label="Padrão model.glb">Padrão — model.glb</button>
+          <button type="button" data-piece-style="classico" data-label="Staunton Clássico">Staunton Clássico</button>
+          <button type="button" data-piece-style="premium" data-label="Tournament Premium">Tournament Premium</button>
+          <button type="button" data-piece-style="royal" data-label="Royal Dourado">Royal Dourado</button>
+          <button type="button" data-piece-style="crystal" data-label="Crystal Neon">Crystal Neon</button>
+          <button type="button" data-piece-style="cyber" data-label="Cyber Neon">Cyber / Neon</button>
+          <button type="button" data-piece-style="obsidian" data-label="Obsidiana">Obsidiana</button>
         </div>
-        <p class="mode-note">O formato Staunton é mantido realista; o estilo futurista acrescenta cristal, transparência e emissão do tema.</p>
+        <p class="mode-note">Modelo e acabamento são independentes do tema. A escolha fica salva e é aplicada sem reiniciar a partida.</p>
         <button class="close-btn" id="btn-close-pieces" type="button">Fechar</button>
       </div>
     </div>
 
+
     <div id="board-modal" class="modal hidden">
       <div class="modal-box">
-        <div class="modal-title">Modelo visual do tabuleiro</div>
-        <div class="mode-btns">
-          <button type="button" data-board-style="neon">Neon Padrão</button>
-          <button type="button" data-board-style="wood">Tournament Wood</button>
-          <button type="button" data-board-style="marble">Luxury Marble</button>
-          <button type="button" data-board-style="medieval">Royal Medieval</button>
-          <button type="button" data-board-style="crystal">Crystal</button>
-          <button type="button" data-board-style="cyber">Cyber Neon</button>
-          <button type="button" data-board-style="minimal">Minimal / Mobile</button>
+        <div class="modal-title">Modelo do tabuleiro</div>
+        <div class="mode-btns board-options">
+          <button type="button" data-board-style="neon" data-label="Neon padrão">Neon padrão</button>
+          <button type="button" data-board-style="madeira" data-label="Tournament Wood">Tournament Wood</button>
+          <button type="button" data-board-style="marmore" data-label="Luxury Marble">Luxury Marble</button>
+          <button type="button" data-board-style="medieval" data-label="Royal Medieval">Royal Medieval</button>
+          <button type="button" data-board-style="crystal" data-label="Crystal">Crystal</button>
+          <button type="button" data-board-style="cyber" data-label="Cyber Neon">Cyber Neon</button>
+          <button type="button" data-board-style="minimal" data-label="Minimal / Mobile">Minimal / Mobile</button>
         </div>
-        <p class="mode-note">Tabuleiro e peças são independentes e podem ser combinados livremente.</p>
+        <p class="mode-note">O tabuleiro é independente do tema e das peças. A escolha fica salva.</p>
         <button class="close-btn" id="btn-close-board" type="button">Fechar</button>
       </div>
     </div>

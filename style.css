@@ -482,17 +482,25 @@ body {
   body.controls-collapsed .bottom-bar { transform: translateY(120%) !important; }
   .moves-panel { display: none !important; }
 }
-\n\n/* v3 — mobile portrait: topo compacto, tabuleiro inteiro e controles fora do 8x8 */\n@media (max-width: 720px) and (orientation: portrait) {\n  .logo { top: max(5px, env(safe-area-inset-top)); font-size: 11px; letter-spacing: 1.5px; white-space: nowrap; z-index: 90; }\n  .logo small { font-size: 8px; }\n  .side-panel { top: max(27px, calc(env(safe-area-inset-top) + 25px)) !important; bottom: auto !important; width: 42vw !important; z-index: 89; }\n  .side-panel.left { left: 5px !important; }\n  .side-panel.right { right: 5px !important; }\n  .player-card { padding: 4px 6px !important; min-height: 32px; border-radius: 8px; gap: 4px; backdrop-filter: none; }\n  .avatar { width: 23px; height: 23px; font-size: 11px; }\n  .name { font-size: 7px; letter-spacing: .5px; }\n  .score { font-size: 12px; }\n  .captured { display: none !important; }\n  .status { top: max(64px, calc(env(safe-area-inset-top) + 62px)) !important; bottom: auto !important; padding: 4px 10px; font-size: 8px; }\n  .controls-toggle { left: 50% !important; right: auto !important; top: auto !important; bottom: max(7px, env(safe-area-inset-bottom)) !important; transform: translateX(-50%) !important; width: 44px !important; height: 36px !important; z-index: 96 !important; }\n  body:not(.controls-collapsed) .controls-toggle { top: auto !important; bottom: max(7px, env(safe-area-inset-bottom)) !important; }\n  .bottom-bar { left: 5px !important; right: 5px !important; bottom: max(48px, calc(env(safe-area-inset-bottom) + 48px)) !important; width: auto !important; max-height: 96px !important; overflow-y: auto !important; grid-template-columns: repeat(4,minmax(0,1fr)) !important; backdrop-filter: none !important; }\n  body.controls-collapsed .bottom-bar { transform: translateY(160%) !important; opacity: 0 !important; pointer-events: none !important; }\n  #toasty, .toasty { bottom: max(48px, calc(env(safe-area-inset-bottom) + 48px)) !important; right: 4px !important; }\n}\n
 
-/* v4 — mobile portrait definitivo: topo mínimo e controles fora do tabuleiro */
+
+/* v5 — mobile portrait definitivo: jogadores junto ao título, tabuleiro inteiro, controles fora */
+.piece-options,.board-options{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
 @media (max-width:720px) and (orientation:portrait){
- .logo{top:max(3px,env(safe-area-inset-top))!important;font-size:10px!important;}
- .side-panel{top:max(20px,calc(env(safe-area-inset-top) + 18px))!important;width:39vw!important;}
- .side-panel.left{left:4px!important}.side-panel.right{right:4px!important}
- .player-card{min-height:28px!important;padding:2px 4px!important}.avatar{width:20px!important;height:20px!important}.score{font-size:10px!important}.name{font-size:6.5px!important}
- .status{top:max(50px,calc(env(safe-area-inset-top) + 48px))!important;font-size:7px!important;padding:3px 8px!important}
- .controls-toggle{left:50%!important;bottom:max(5px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:42px!important;height:32px!important}
- .bottom-bar{bottom:max(41px,calc(env(safe-area-inset-bottom) + 41px))!important;max-height:86px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
- .bottom-bar button{min-height:31px!important;font-size:8px!important;padding:3px 2px!important}
- #toasty,.toasty{bottom:max(43px,calc(env(safe-area-inset-bottom) + 43px))!important}
+  .logo{top:max(4px,env(safe-area-inset-top))!important;left:50%!important;transform:translateX(-50%)!important;font-size:10px!important;letter-spacing:1px!important;white-space:nowrap!important;z-index:95!important}
+  .logo small{font-size:8px!important}
+  .side-panel{top:max(2px,env(safe-area-inset-top))!important;bottom:auto!important;width:30vw!important;z-index:94!important}
+  .side-panel.left{left:4px!important}.side-panel.right{right:4px!important}
+  .player-card{padding:3px 5px!important;min-height:27px!important;border-radius:7px!important;gap:3px!important;background:rgba(2,8,18,.78)!important;backdrop-filter:none!important}
+  .avatar{width:19px!important;height:19px!important;font-size:9px!important}.name{font-size:6.5px!important;letter-spacing:.3px!important}.score{font-size:10px!important}.captured{display:none!important}
+  .status{top:max(34px,calc(env(safe-area-inset-top) + 32px))!important;bottom:auto!important;padding:3px 9px!important;font-size:7px!important}
+  .moves-panel{display:none!important}
+  .controls-toggle{left:50%!important;right:auto!important;top:auto!important;bottom:max(5px,env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;width:46px!important;height:34px!important;z-index:99!important;border-radius:17px!important}
+  body:not(.controls-collapsed) .controls-toggle{top:auto!important;bottom:max(5px,env(safe-area-inset-bottom))!important}
+  .bottom-bar{left:4px!important;right:4px!important;bottom:max(44px,calc(env(safe-area-inset-bottom) + 44px))!important;width:auto!important;max-width:none!important;max-height:88px!important;overflow-y:auto!important;display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:3px!important;padding:4px!important;background:rgba(3,10,20,.90)!important;backdrop-filter:none!important}
+  .bottom-bar button{min-height:32px!important;font-size:8px!important;padding:4px 2px!important}
+  body.controls-collapsed .bottom-bar{transform:translateY(180%)!important;opacity:0!important;pointer-events:none!important}
+  #toasty,.toasty{bottom:max(43px,calc(env(safe-area-inset-bottom) + 43px))!important;right:3px!important;z-index:100!important}
+  #toasty img,.toasty img{width:112px!important;max-height:28vh!important}
+  .modal-box{max-height:82vh!important;overflow:auto!important}.piece-options,.board-options{grid-template-columns:1fr!important}
 }
