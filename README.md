@@ -129,3 +129,7 @@ README.md
 - Numeração passa a usar versões inteiras (v2, v3, ...).
 - Cache do Service Worker alterado para o build v2, evitando reutilizar assets da v1.9.
 - Layout vertical mobile reforça o tabuleiro como área principal e mantém informações/controles na região inferior.
+
+
+## v4 (2026-09-22)
+Baseada integralmente na v3. Mantém recursos existentes; model.glb padrão; seis acabamentos de peças; sete estilos de tabuleiro; mobile portrait refinado; toque assistido e Toasty P2P preservados.
