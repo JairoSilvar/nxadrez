@@ -1,4 +1,4 @@
-var XADREZ_PRO_BUILD_V19 = "1.9-20260922";
+var XADREZ_PRO_BUILD_V2 = "2-20260922";
 /* v1.7 — Staunton GLB real, local, com fallback procedural */
 var XPStaunton = (function () {
   var ready = false, failed = false, templates = {};
@@ -78,7 +78,7 @@ var XPStaunton = (function () {
 XPStaunton.load(function(ok) {
   if (ok) {
     // Replace any procedural startup pieces as soon as the local GLB is ready.
-    setTimeout(rebuildPiecesWithStaunton, 0);
+    setTimeout(function(){ if (window.XPRebuildPiecesWithStaunton) window.XPRebuildPiecesWithStaunton(); }, 0);
   }
 });
 
@@ -129,7 +129,9 @@ function rebuildPiecesWithStaunton() {
   }
 }
 
-
+  window.XPRebuildPiecesWithStaunton = rebuildPiecesWithStaunton;
+  // Se o GLB terminou de carregar antes do jogo expor a reconstrução, aplica agora.
+  if (XPStaunton.isReady()) setTimeout(rebuildPiecesWithStaunton, 0);
 
   function init() {
     const wrap = document.getElementById('canvas-wrap');
@@ -350,16 +352,16 @@ function rebuildPiecesWithStaunton() {
       emissiveIntensity: classic ? 0.0 : 0.55,
       metalness: classic ? 0.22 : 0.05,
       roughness: classic ? 0.30 : 0.12,
-      transmission: classic ? 0.0 : 0.45,
+      transmission: classic ? 0.0 : 0.28,
       clearcoat: classic ? 0.72 : 1.0,
       clearcoatRoughness: classic ? 0.16 : 0.05,
       transparent: !classic,
-      opacity: classic ? 1.0 : 0.88,
+      opacity: classic ? 1.0 : 0.95,
       side: THREE.DoubleSide
     });
     const baseMat = mat.clone();
-    baseMat.transmission = classic ? 0 : 0.25;
-    baseMat.opacity = classic ? 1 : 0.95;
+    baseMat.transmission = classic ? 0 : 0.16;
+    baseMat.opacity = classic ? 1 : 0.98;
     baseMat.emissiveIntensity = classic ? 0 : 0.7;
     baseMat.roughness = 0.12;
 
@@ -396,7 +398,9 @@ function rebuildPiecesWithStaunton() {
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     spr.scale.set(1.4, 1.4, 1);
-    spr.position.y = 0.55;
+    spr.position.y = 0.20;
+    spr.userData.xpNeonRise = true;
+    spr.userData.xpNeonPhase = Math.random() * Math.PI * 2;
     g.add(spr);
     }
     return g;
@@ -1303,10 +1307,14 @@ function rebuildPiecesWithStaunton() {
     }
     const t = performance.now() * 0.001;
     Object.values(pieceMap).forEach((mesh, i) => {
-      const spr = mesh.children.find(c => c.isSprite);
+      const spr = mesh.children.find(c => c.isSprite && c.userData.xpNeonRise);
       if (spr) {
-        const s = 1.45 + Math.sin(t * 1.3 + i * 0.5) * 0.1;
-        spr.scale.set(s, s, 1);
+        const phase = (t * 0.72 + spr.userData.xpNeonPhase) % 1;
+        spr.position.y = 0.16 + phase * 1.22;
+        const pulse = Math.sin(phase * Math.PI);
+        const ss = 1.05 + pulse * 0.34;
+        spr.scale.set(ss, ss, 1);
+        spr.material.opacity = 0.16 + pulse * 0.34;
       }
     });
     renderer.render(scene, camera);
@@ -1445,6 +1453,17 @@ function rebuildPiecesWithStaunton() {
     if (el) el.textContent = 'Jogadores: ' + n + ' / 2';
   }
 
+  function applyPlayerPerspective() {
+    // Cada jogador vê o próprio exército na parte inferior do tabuleiro.
+    var z = playerIsWhite ? 10.8 : -10.8;
+    PLAY_CAM.z = z;
+    if (!cineActive && camera && controls) {
+      camera.position.set(0, 12.2, z);
+      controls.target.set(0, 0.25, 0);
+      controls.update();
+    }
+  }
+
   function enterParisDirect() {
     // Entrada direta: não mostra o modal intermediário.
     var modal = document.getElementById('paris-modal');
@@ -1456,6 +1475,7 @@ function rebuildPiecesWithStaunton() {
     parisReady = false;
     isParisHost = false;
     playerIsWhite = false;
+    applyPlayerPerspective();
     try { if (conn) conn.close(); } catch(e) {}
     try { if (peer) peer.destroy(); } catch(e) {}
     peer = new Peer();
@@ -1516,6 +1536,7 @@ function rebuildPiecesWithStaunton() {
     }
     isParisHost = true;
     playerIsWhite = true;
+    applyPlayerPerspective();
     var pm = document.getElementById('paris-modal'); if (pm) pm.classList.add('hidden');
     setParisStatus('Abrindo sala Paris…');
     try { if (peer) peer.destroy(); } catch (e) {}
@@ -1564,6 +1585,7 @@ function rebuildPiecesWithStaunton() {
     }
     isParisHost = false;
     playerIsWhite = false;
+    applyPlayerPerspective();
     setParisStatus('Entrando na sala Paris…');
     try { if (peer) peer.destroy(); } catch (e) {}
     peer = new Peer(); // ID aleatório no cliente

@@ -460,3 +460,25 @@ body {
     top: 118px !important;
   }
 }
+
+
+/* v2 — mobile vertical: tabuleiro prioritário, informações e controles abaixo */
+@media (max-width: 720px) and (orientation: portrait) {
+  .logo { top: max(6px, env(safe-area-inset-top)); font-size: 12px; }
+  .logo small { font-size: 9px; opacity: .9; }
+  .side-panel { top: auto !important; bottom: 122px !important; width: 46vw !important; }
+  .side-panel.left { left: 6px !important; }
+  .side-panel.right { right: 6px !important; }
+  .status { top: auto !important; bottom: 88px !important; }
+  .bottom-bar {
+    position: fixed !important; left: 6px !important; right: 6px !important; bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    width: auto !important; max-width: none !important; transform: none !important;
+    display: grid !important; grid-template-columns: repeat(4, minmax(0,1fr)) !important; gap: 4px !important;
+    background: rgba(4,12,24,.88) !important; backdrop-filter: blur(5px);
+  }
+  .bottom-bar button { min-height: 36px !important; font-size: 9px !important; padding: 5px 3px !important; }
+  .controls-toggle { left: 8px !important; top: auto !important; bottom: 92px !important; transform: none !important; }
+  body:not(.controls-collapsed) .controls-toggle { top: auto !important; bottom: 92px !important; }
+  body.controls-collapsed .bottom-bar { transform: translateY(120%) !important; }
+  .moves-panel { display: none !important; }
+}

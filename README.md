@@ -117,3 +117,15 @@ README.md
 - Novo Jogo, recarga de posição e promoção continuam passando pela mesma `createPiece()`, portanto usam Staunton depois do carregamento.
 - Procedurais continuam somente como fallback caso o GLB falhe.
 - No desktop, o botão de recolher foi movido para baixo do painel VOCÊ; o menu vertical começa abaixo dele.
+
+## v2 — 22/09/2026
+- Corrigido o escopo da reconstrução Staunton após o carregamento do GLB.
+- As 32 peças são reconstruídas com os seis modelos do `models/staunton-set.glb`; geometria procedural permanece apenas como fallback.
+- Removida a condição que fazia o carregamento concluir sem conseguir chamar a reconstrução do tabuleiro.
+- Material futurista/cristal ficou menos transparente.
+- Neon interno ganhou movimento vertical de baixo para cima.
+- Perspectiva da Sala Paris passa a colocar o lado do próprio jogador na parte inferior (brancas/pretas).
+- Identificação de versão sempre visível no topo: `XADREZ PRO 3D v2`.
+- Numeração passa a usar versões inteiras (v2, v3, ...).
+- Cache do Service Worker alterado para o build v2, evitando reutilizar assets da v1.9.
+- Layout vertical mobile reforça o tabuleiro como área principal e mantém informações/controles na região inferior.
