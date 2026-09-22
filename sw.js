@@ -1,8 +1,8 @@
 /* Xadrez Pro 3D Service Worker */
-const XP_SW_BUILD = 'xp-3d-v2-20260922';
+const XP_SW_BUILD = 'xp-3d-v3-20260922';
 const XP_CACHE = 'xadrez-pro-3d-' + XP_SW_BUILD;
 const CORE = [
-  "./models/staunton-set.glb",'./', './index.html', './manifest.json', './style.css', './game.js', './assets/toasty-sprite.png', './assets/toasty.mp3'];
+  "./models/model.glb","./models/staunton-set.glb",'./', './index.html', './manifest.json', './style.css', './game.js', './assets/toasty-sprite.png', './assets/toasty.mp3'];
 
 self.addEventListener('install', event => {
   event.waitUntil(

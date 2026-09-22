@@ -1,4 +1,4 @@
-var XADREZ_PRO_BUILD_V2 = "2-20260922";
+var XADREZ_PRO_BUILD_V3 = "3-20260922";
 /* v1.7 — Staunton GLB real, local, com fallback procedural */
 var XPStaunton = (function () {
   var ready = false, failed = false, templates = {};
@@ -40,7 +40,7 @@ var XPStaunton = (function () {
   function load(onDone) {
     if (ready || failed) { if(onDone) onDone(ready); return; }
     if (!THREE.GLTFLoader) { failed = true; if(onDone) onDone(false); return; }
-    new THREE.GLTFLoader().load("models/staunton-set.glb", function(gltf) {
+    new THREE.GLTFLoader().load("models/model.glb", function(gltf) {
       var found = {};
       var wanted = ["pawn","rook","knight","bishop","queen","king"];
       gltf.scene.updateMatrixWorld(true);
@@ -668,6 +668,29 @@ function rebuildPiecesWithStaunton() {
     return alg(f, r);
   }
 
+  function squareWorldCenter(sq) {
+    if (!sq || sq.length < 2) return null;
+    var f = sq.charCodeAt(0) - 97, r = parseInt(sq.charAt(1), 10) - 1;
+    if (f < 0 || f > 7 || r < 0 || r > 7) return null;
+    var off = 3.5 * SQUARE;
+    return { x: f * SQUARE - off, z: (7 - r) * SQUARE - off };
+  }
+
+  function assistedTouchDestination(hit, exactSq, e) {
+    if (!selected || !legal || !legal.length) return exactSq;
+    var isTouch = e && (e.pointerType === 'touch' || e.pointerType === 'pen');
+    if (!isTouch) return exactSq;
+    if (legal.some(function(m){ return m.to === exactSq; })) return exactSq;
+    var best = null, bestD = Infinity;
+    legal.forEach(function(m){
+      var c = squareWorldCenter(m.to); if (!c) return;
+      var d = Math.hypot(hit.x - c.x, hit.z - c.z);
+      if (d < bestD) { bestD = d; best = m.to; }
+    });
+    // tolerância moderada: ajuda o dedo sem transformar toque distante em outro lance
+    return (best && bestD <= SQUARE * 0.72) ? best : exactSq;
+  }
+
   function onPointerUp(e) {
     if (!pointerDownPos) return;
     const wasDrag = isDragging;
@@ -701,8 +724,9 @@ function rebuildPiecesWithStaunton() {
       if (raycaster.ray.intersectPlane(plane, hit)) {
         const sq = worldToSquare(hit.x, hit.z);
         if (sq) {
-          // Se já tem peça selecionada, o destino é a casa do plano (qualquer ponto da casa)
-          if (selected) clicked = sq;
+          // Mobile: se o dedo cair perto da borda, favorece um destino legal próximo.
+          const assistedSq = assistedTouchDestination(hit, sq, e);
+          if (selected) clicked = assistedSq;
           else if (!clicked) clicked = sq;
         }
       }
@@ -1184,7 +1208,10 @@ function rebuildPiecesWithStaunton() {
     }
   }
 
-  function showToasty(text) {
+  function showToasty(text, broadcast) {
+    if (broadcast !== false && gameMode === 'paris' && conn && conn.open) {
+      try { conn.send({ type: 'toasty', text: String(text || 'TOASTY!') }); } catch (e) {}
+    }
     const el = document.getElementById('toasty');
     if (!el) return;
     el.classList.remove('hidden');
@@ -1280,7 +1307,7 @@ function rebuildPiecesWithStaunton() {
 
   function updatePlayCamera() {
     var a = innerWidth / Math.max(innerHeight, 1);
-    if (a < 0.72) PLAY_CAM = { x: 0, y: 14.6, z: 12.8 };
+    if (a < 0.72) PLAY_CAM = { x: 0, y: 17.2, z: 15.2 };
     else if (a > 1.45 && innerHeight < 650) PLAY_CAM = { x: 0, y: 10.8, z: 9.4 };
     else PLAY_CAM = { x: 0, y: 12.2, z: 10.8 };
   }
@@ -1627,6 +1654,10 @@ function rebuildPiecesWithStaunton() {
           if (!chess.get(data.from)) return;
           executarLance(data.from, data.to, data.promotion || 'q');
         } catch (e) {}
+      }
+      if (data.type === 'toasty') {
+        showToasty(data.text || 'TOASTY!', false);
+        return;
       }
       if (data.type === 'sync' && data.fen) {
         try {
