@@ -440,16 +440,18 @@ body {
     right: auto !important;
     bottom: auto !important;
     transform: none !important;
-    width: 190px !important;
+    width: 254px !important;
     max-height: calc(100vh - 176px) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    flex-direction: column !important;
-    flex-wrap: nowrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     align-items: stretch !important;
   }
+  .bottom-bar button { width: 100% !important; }
+  #btn-sound, #btn-toasty { padding: 6px 0 !important; }
   body.controls-collapsed .bottom-bar {
-    transform: translateX(-220px) !important;
+    transform: translateX(-280px) !important;
     opacity: 0 !important;
     pointer-events: none !important;
   }
@@ -547,7 +549,8 @@ html,body{max-width:100%;overflow-x:hidden}
  .side-panel{top:8px!important;width:160px!important}.side-panel.left{left:8px!important}.side-panel.right{right:8px!important}
  .captured{min-height:0;max-height:22px;overflow:auto}
  .logo{top:10px!important}.status{top:42px!important}
- .bottom-bar{left:8px!important;top:126px!important;width:166px!important;max-width:166px!important;max-height:calc(100dvh - 275px)!important}
+ .bottom-bar{left:8px!important;top:126px!important;width:254px!important;max-width:254px!important;max-height:calc(100dvh - 210px)!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+ .bottom-bar button{width:100%!important}
  .controls-toggle,body:not(.controls-collapsed) .controls-toggle{left:8px!important;top:82px!important}
  .moves-panel{display:flex!important;left:8px!important;right:auto!important;bottom:12px!important;width:166px!important;max-height:125px!important}
  body.controls-collapsed .moves-panel{display:none!important}

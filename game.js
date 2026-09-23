@@ -26,7 +26,11 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
   let pieceMaterial=localStorage.getItem('xp-v8-piece-material')||'padrao';
   const materialNames={padrao:'Cores do tema',classico:'Marfim / Ébano',premium:'Pérola / Grafite',royal:'Ouro / Violeta',crystal:'Cristal nas cores do tema',cyber:'Neon ciano / Magenta',obsidian:'Prata / Obsidiana'};
   if(!materialNames[pieceMaterial])pieceMaterial='padrao';
-  let cameraLocked=true;
+  // v10: câmera livre (destravada) por padrão, para poder orbitar/zoom
+  // manualmente e travar só depois de achar o ângulo ideal. O estado fica
+  // salvo, então uma vez travada, continua travada nas próximas visitas.
+  let cameraLockedStored = localStorage.getItem('xp-v10-camera-locked');
+  let cameraLocked = cameraLockedStored === null ? false : cameraLockedStored === '1';
   // v9: ângulos de câmera pré-definidos — cada um é sempre enquadrado no
   // tamanho máximo possível para a tela (zoom/posição calculados por
   // updatePlayCamera para o ângulo escolhido).
@@ -76,7 +80,7 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 0.25, 0);
     controls.enableDamping = false;
-    controls.enabled = false;
+    controls.enabled = !cameraLocked;
     controls.dampingFactor = 0.08;
     controls.minDistance = 6;
     controls.maxDistance = 150;
@@ -168,12 +172,18 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
     document.getElementById('btn-close-board').onclick=()=>document.getElementById('board-modal').classList.add('hidden');
     const boardOptions=document.querySelector('#board-modal .board-options');boardOptions.innerHTML='';
     Object.entries(XPAssets.boards).forEach(([id,def])=>{const b=document.createElement('button');b.type='button';b.textContent=def.name;b.dataset.boardStyle=id;b.onclick=()=>selectBoard(id);boardOptions.appendChild(b);});
-    document.getElementById('btn-camera').onclick=()=>{
+    const cameraBtn=document.getElementById('btn-camera');
+    function syncCameraBtn(){
+      cameraBtn.textContent=cameraLocked?'🔓 Destravar câmera':'🔒 Travar câmera aqui';
+      cameraBtn.setAttribute('aria-pressed',String(cameraLocked));
+    }
+    syncCameraBtn(); // reflete o estado salvo (localStorage) já no carregamento
+    cameraBtn.onclick=()=>{
       cameraLocked=!cameraLocked;cameraAnimToken++;cineActive=false;
+      localStorage.setItem('xp-v10-camera-locked',cameraLocked?'1':'0');
       controls.enableDamping=false;controls.update();controls.enabled=!cameraLocked;
       if(cameraLocked) onResize();
-      document.getElementById('btn-camera').textContent=cameraLocked?'🔓 Destravar câmera':'🔒 Enquadrar / Travar';
-      document.getElementById('btn-camera').setAttribute('aria-pressed',String(cameraLocked));
+      syncCameraBtn();
     };
     const presetBtn=document.getElementById('btn-camera-preset');
     if(presetBtn){
@@ -1199,7 +1209,7 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
     const control=document.getElementById(collapsed?'btn-controls-toggle':'bottom-bar').getBoundingClientRect();
     let bottom=small?Math.ceil(innerHeight-control.top+6):12;
     if(panel)bottom=Math.max(bottom,Math.ceil(innerHeight-panel.getBoundingClientRect().top+6));
-    wrap.style.cssText='position:fixed;left:'+(small?0:collapsed?8:182)+'px;right:8px;top:'+(small?58:82)+'px;bottom:'+bottom+'px;';
+    wrap.style.cssText='position:fixed;left:'+(small?0:collapsed?8:272)+'px;right:8px;top:'+(small?58:82)+'px;bottom:'+bottom+'px;';
     document.documentElement.style.setProperty('--play-top',wrap.style.top);document.documentElement.style.setProperty('--play-bottom',wrap.style.bottom);
     const old=camera.position.clone(),target=controls.target.clone();renderer.setSize(wrap.clientWidth,Math.max(wrap.clientHeight,1));updatePlayCamera();
     if(!cameraLocked&&!cineActive){camera.position.copy(old);controls.target.copy(target);controls.update();}
