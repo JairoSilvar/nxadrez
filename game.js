@@ -27,6 +27,17 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
   const materialNames={padrao:'Cores do tema',classico:'Marfim / Ébano',premium:'Pérola / Grafite',royal:'Ouro / Violeta',crystal:'Cristal nas cores do tema',cyber:'Neon ciano / Magenta',obsidian:'Prata / Obsidiana'};
   if(!materialNames[pieceMaterial])pieceMaterial='padrao';
   let cameraLocked=true;
+  // v9: ângulos de câmera pré-definidos — cada um é sempre enquadrado no
+  // tamanho máximo possível para a tela (zoom/posição calculados por
+  // updatePlayCamera para o ângulo escolhido).
+  var CAMERA_PRESETS = [
+    { id: 'padrao',  label: 'Padrão',  axis: 'z', elev: null }, // elevação adaptativa (ver updatePlayCamera)
+    { id: 'baixa',   label: 'Baixa',   axis: 'z', elev: 0.6  }, // ângulo mais raso, melhor p/ reconhecer as peças
+    { id: 'lateral', label: 'Lateral', axis: 'x', elev: 1.4  }, // vista do lado do tabuleiro (fileiras a-h)
+    { id: 'topo',    label: 'Topo',    axis: 'z', elev: 3.6  }  // vista quase de cima, boa p/ ver a posição inteira
+  ];
+  let cameraPresetIndex = parseInt(localStorage.getItem('xp-v9-camera-preset') || '0', 10);
+  if (!(cameraPresetIndex >= 0 && cameraPresetIndex < CAMERA_PRESETS.length)) cameraPresetIndex = 0;
   let boardStyle = localStorage.getItem('xp-v7-board-style') || 'neon';
   if (!XPAssets.boards[boardStyle]) boardStyle='neon';
   let gameMode = 'local';
@@ -164,6 +175,11 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
       document.getElementById('btn-camera').textContent=cameraLocked?'🔓 Destravar câmera':'🔒 Enquadrar / Travar';
       document.getElementById('btn-camera').setAttribute('aria-pressed',String(cameraLocked));
     };
+    const presetBtn=document.getElementById('btn-camera-preset');
+    if(presetBtn){
+      presetBtn.textContent='🎥 Câmera: '+CAMERA_PRESETS[cameraPresetIndex].label;
+      presetBtn.onclick=cycleCameraPreset;
+    }
     if(window.visualViewport)window.visualViewport.addEventListener('resize',onResize);
     var controlsToggle = document.getElementById('btn-controls-toggle');
     if (controlsToggle) controlsToggle.onclick = function () {
@@ -1142,7 +1158,11 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
     const bounds=new THREE.Box3().setFromObject(boardGroup);
     bounds.min.y=Math.min(bounds.min.y,-.15);bounds.max.y=Math.max(bounds.max.y,1.9);
     const center=bounds.getCenter(new THREE.Vector3());center.y=.45;
-    const direction=new THREE.Vector3(0,w<h?2.6:1.65,playerIsWhite?1:-1).normalize();
+    const preset=CAMERA_PRESETS[cameraPresetIndex]||CAMERA_PRESETS[0];
+    const elev=preset.elev==null?(w<h?2.6:1.65):preset.elev;
+    const direction=preset.axis==='x'
+      ? new THREE.Vector3(playerIsWhite?1:-1,elev,0).normalize()
+      : new THREE.Vector3(0,elev,playerIsWhite?1:-1).normalize();
     const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(new THREE.Vector3(x,y,z));
     let lo=1,hi=150;
     for(let i=0;i<36;i++){
@@ -1152,6 +1172,24 @@ var XADREZ_PRO_BUILD_V8 = "8-20260922";
     }
     PLAY_CAM={x:center.x+direction.x*hi,y:center.y+direction.y*hi,z:center.z+direction.z*hi};PLAY_TARGET={x:center.x,y:center.y,z:center.z};
     camera.position.set(PLAY_CAM.x,PLAY_CAM.y,PLAY_CAM.z);controls.target.copy(center);camera.lookAt(center);controls.update();
+  }
+  // v9: alterna entre os ângulos de câmera pré-definidos (sempre enquadrando
+  // o tabuleiro no maior tamanho possível para a tela) e anima suavemente
+  // até a nova posição. O botão "Travar câmera" congela a câmera onde ela
+  // estiver — inclusive no ângulo escolhido aqui.
+  function cycleCameraPreset(){
+    const fromPos=camera.position.clone(),fromTarget=controls.target.clone();
+    cameraPresetIndex=(cameraPresetIndex+1)%CAMERA_PRESETS.length;
+    localStorage.setItem('xp-v9-camera-preset',String(cameraPresetIndex));
+    updatePlayCamera(); // recalcula PLAY_CAM/PLAY_TARGET para o novo ângulo e já aponta a câmera para lá
+    const toPos={x:PLAY_CAM.x,y:PLAY_CAM.y,z:PLAY_CAM.z},toTarget={x:PLAY_TARGET.x,y:PLAY_TARGET.y,z:PLAY_TARGET.z};
+    camera.position.copy(fromPos);controls.target.copy(fromTarget);controls.update();
+    cameraAnimToken++;cineActive=false;
+    animateCameraTo(toPos,toTarget,550);
+    const preset=CAMERA_PRESETS[cameraPresetIndex];
+    const btn=document.getElementById('btn-camera-preset');
+    if(btn)btn.textContent='🎥 Câmera: '+preset.label;
+    showToast('Ângulo de câmera: '+preset.label);
   }
   function onResize() {
     if(!renderer)return;
