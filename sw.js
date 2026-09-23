@@ -1,5 +1,5 @@
-const XP_SW_BUILD='xadrez-pro-3d-v7-20260922';
-const CORE=['./','./index.html','./style.css','./game.js','./assets-v7.js','./three.js','./GLTFLoader.js','./OrbitControls.js','./chess.min.js','./peerjs.min.js','./manifest.json','./models/model.glb','./assets/toasty-sprite.png','./assets/toasty.mp3'];
+const XP_SW_BUILD='xadrez-pro-3d-v8-20260922';
+const CORE=['./','./index.html','./style.css','./game.js','./assets-v8.js','./three.js','./GLTFLoader.js','./OrbitControls.js','./chess.min.js','./peerjs.min.js','./manifest.json','./models/model.glb','./assets/toasty-sprite.png','./assets/toasty.mp3'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(XP_SW_BUILD).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('xadrez-pro-3d-')&&k!==XP_SW_BUILD).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{

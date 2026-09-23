@@ -1,0 +1,221 @@
+PASS 32 peças iniciais
+PASS Carrega padrao
+PASS Preserva posição padrao
+PASS Dimensões dentro da casa padrao
+PASS Base apoiada padrao
+PASS Cavalos opostos padrao
+PASS Material independente padrao/padrao
+PASS Material independente padrao/classico
+PASS Material independente padrao/premium
+PASS Material independente padrao/royal
+PASS Material independente padrao/crystal
+PASS Material independente padrao/cyber
+PASS Material independente padrao/obsidian
+PASS Carrega premium
+PASS Preserva posição premium
+PASS Dimensões dentro da casa premium
+PASS Base apoiada premium
+PASS Cavalos opostos premium
+PASS Material independente premium/padrao
+PASS Material independente premium/classico
+PASS Material independente premium/premium
+PASS Material independente premium/royal
+PASS Material independente premium/crystal
+PASS Material independente premium/cyber
+PASS Material independente premium/obsidian
+PASS Carrega tournament
+PASS Preserva posição tournament
+PASS Dimensões dentro da casa tournament
+PASS Base apoiada tournament
+PASS Cavalos opostos tournament
+PASS Material independente tournament/padrao
+PASS Material independente tournament/classico
+PASS Material independente tournament/premium
+PASS Material independente tournament/royal
+PASS Material independente tournament/crystal
+PASS Material independente tournament/cyber
+PASS Material independente tournament/obsidian
+PASS Carrega medieval
+PASS Preserva posição medieval
+PASS Dimensões dentro da casa medieval
+PASS Base apoiada medieval
+PASS Cavalos opostos medieval
+PASS Material independente medieval/padrao
+PASS Material independente medieval/classico
+PASS Material independente medieval/premium
+PASS Material independente medieval/royal
+PASS Material independente medieval/crystal
+PASS Material independente medieval/cyber
+PASS Material independente medieval/obsidian
+PASS Carrega spiral
+PASS Preserva posição spiral
+PASS Dimensões dentro da casa spiral
+PASS Base apoiada spiral
+PASS Cavalos opostos spiral
+PASS Material independente spiral/padrao
+PASS Material independente spiral/classico
+PASS Material independente spiral/premium
+PASS Material independente spiral/royal
+PASS Material independente spiral/crystal
+PASS Material independente spiral/cyber
+PASS Material independente spiral/obsidian
+PASS Carrega crystal
+PASS Preserva posição crystal
+PASS Dimensões dentro da casa crystal
+PASS Base apoiada crystal
+PASS Cavalos opostos crystal
+PASS Material independente crystal/padrao
+PASS Material independente crystal/classico
+PASS Material independente crystal/premium
+PASS Material independente crystal/royal
+PASS Material independente crystal/crystal
+PASS Material independente crystal/cyber
+PASS Material independente crystal/obsidian
+PASS Carrega cyber
+PASS Preserva posição cyber
+PASS Dimensões dentro da casa cyber
+PASS Base apoiada cyber
+PASS Cavalos opostos cyber
+PASS Material independente cyber/padrao
+PASS Material independente cyber/classico
+PASS Material independente cyber/premium
+PASS Material independente cyber/royal
+PASS Material independente cyber/crystal
+PASS Material independente cyber/cyber
+PASS Material independente cyber/obsidian
+PASS Carrega classico
+PASS Preserva posição classico
+PASS Dimensões dentro da casa classico
+PASS Base apoiada classico
+PASS Cavalos opostos classico
+PASS Material independente classico/padrao
+PASS Material independente classico/classico
+PASS Material independente classico/premium
+PASS Material independente classico/royal
+PASS Material independente classico/crystal
+PASS Material independente classico/cyber
+PASS Material independente classico/obsidian
+PASS Carrega tabuleiro neon
+PASS Tabuleiro inteiro neon
+BOUNDS neon {"min":[-5.208000183105469,-0.2200000035762787,-5.208000183105469],"max":[5.208000183105469,0.029999999329447746,5.208000183105469]}
+PASS Carrega tabuleiro madeira
+PASS Tabuleiro inteiro madeira
+BOUNDS madeira {"min":[-5.820826759023115,-2.199049429184149,-5.820826759023115],"max":[5.820826759023115,0.03500000000000014,5.820826759023115]}
+PASS Carrega tabuleiro premium
+PASS Tabuleiro inteiro premium
+BOUNDS premium {"min":[-5.5,-0.35371389985084534,-5.5],"max":[5.5,0.029999999329447746,5.5]}
+PASS Carrega tabuleiro minimal
+PASS Tabuleiro inteiro minimal
+BOUNDS minimal {"min":[-5.324999809265137,-0.42144614458084106,-5.324997425079346],"max":[5.324999809265137,0.029999999329447746,5.324997425079346]}
+PASS Carrega tabuleiro voxel
+PASS Tabuleiro inteiro voxel
+BOUNDS voxel {"min":[-6.613333384195965,-0.27500000715255735,-6.613333384195965],"max":[6.613333384195965,0.03500000019868215,6.613333384195965]}
+PASS Sem rolagem lateral 320×568/true
+PASS Enquadramento 320×568/true
+PASS Painel fora do tabuleiro pieces-modal/320/true
+PASS Painel fora do tabuleiro board-modal/320/true
+PASS Painel fora do tabuleiro material-modal/320/true
+PASS Painel fora do tabuleiro theme-modal/320/true
+PASS Painel fora do tabuleiro mode-modal/320/true
+PASS Painel fora do tabuleiro paris-modal/320/true
+PASS Painel fora do tabuleiro promo-modal/320/true
+PASS Sem rolagem lateral 320×568/false
+PASS Enquadramento 320×568/false
+PASS Painel fora do tabuleiro pieces-modal/320/false
+PASS Painel fora do tabuleiro board-modal/320/false
+PASS Painel fora do tabuleiro material-modal/320/false
+PASS Painel fora do tabuleiro theme-modal/320/false
+PASS Painel fora do tabuleiro mode-modal/320/false
+PASS Painel fora do tabuleiro paris-modal/320/false
+PASS Painel fora do tabuleiro promo-modal/320/false
+PASS Sem rolagem lateral 390×844/true
+PASS Enquadramento 390×844/true
+PASS Painel fora do tabuleiro pieces-modal/390/true
+PASS Painel fora do tabuleiro board-modal/390/true
+PASS Painel fora do tabuleiro material-modal/390/true
+PASS Painel fora do tabuleiro theme-modal/390/true
+PASS Painel fora do tabuleiro mode-modal/390/true
+PASS Painel fora do tabuleiro paris-modal/390/true
+PASS Painel fora do tabuleiro promo-modal/390/true
+PASS Sem rolagem lateral 390×844/false
+PASS Enquadramento 390×844/false
+PASS Painel fora do tabuleiro pieces-modal/390/false
+PASS Painel fora do tabuleiro board-modal/390/false
+PASS Painel fora do tabuleiro material-modal/390/false
+PASS Painel fora do tabuleiro theme-modal/390/false
+PASS Painel fora do tabuleiro mode-modal/390/false
+PASS Painel fora do tabuleiro paris-modal/390/false
+PASS Painel fora do tabuleiro promo-modal/390/false
+PASS Sem rolagem lateral 768×1024/true
+PASS Enquadramento 768×1024/true
+PASS Painel fora do tabuleiro pieces-modal/768/true
+PASS Painel fora do tabuleiro board-modal/768/true
+PASS Painel fora do tabuleiro material-modal/768/true
+PASS Painel fora do tabuleiro theme-modal/768/true
+PASS Painel fora do tabuleiro mode-modal/768/true
+PASS Painel fora do tabuleiro paris-modal/768/true
+PASS Painel fora do tabuleiro promo-modal/768/true
+PASS Sem rolagem lateral 768×1024/false
+PASS Enquadramento 768×1024/false
+PASS Painel fora do tabuleiro pieces-modal/768/false
+PASS Painel fora do tabuleiro board-modal/768/false
+PASS Painel fora do tabuleiro material-modal/768/false
+PASS Painel fora do tabuleiro theme-modal/768/false
+PASS Painel fora do tabuleiro mode-modal/768/false
+PASS Painel fora do tabuleiro paris-modal/768/false
+PASS Painel fora do tabuleiro promo-modal/768/false
+PASS Sem rolagem lateral 1280×800/true
+PASS Enquadramento 1280×800/true
+PASS Painel fora do tabuleiro pieces-modal/1280/true
+PASS Painel fora do tabuleiro board-modal/1280/true
+PASS Painel fora do tabuleiro material-modal/1280/true
+PASS Painel fora do tabuleiro theme-modal/1280/true
+PASS Painel fora do tabuleiro mode-modal/1280/true
+PASS Painel fora do tabuleiro paris-modal/1280/true
+PASS Painel fora do tabuleiro promo-modal/1280/true
+PASS Sem rolagem lateral 1280×800/false
+PASS Enquadramento 1280×800/false
+PASS Painel fora do tabuleiro pieces-modal/1280/false
+PASS Painel fora do tabuleiro board-modal/1280/false
+PASS Painel fora do tabuleiro material-modal/1280/false
+PASS Painel fora do tabuleiro theme-modal/1280/false
+PASS Painel fora do tabuleiro mode-modal/1280/false
+PASS Painel fora do tabuleiro paris-modal/1280/false
+PASS Painel fora do tabuleiro promo-modal/1280/false
+PASS Sem rolagem lateral 844×390/true
+PASS Enquadramento 844×390/true
+PASS Painel fora do tabuleiro pieces-modal/844/true
+PASS Painel fora do tabuleiro board-modal/844/true
+PASS Painel fora do tabuleiro material-modal/844/true
+PASS Painel fora do tabuleiro theme-modal/844/true
+PASS Painel fora do tabuleiro mode-modal/844/true
+PASS Painel fora do tabuleiro paris-modal/844/true
+PASS Painel fora do tabuleiro promo-modal/844/true
+PASS Sem rolagem lateral 844×390/false
+PASS Enquadramento 844×390/false
+PASS Painel fora do tabuleiro pieces-modal/844/false
+PASS Painel fora do tabuleiro board-modal/844/false
+PASS Painel fora do tabuleiro material-modal/844/false
+PASS Painel fora do tabuleiro theme-modal/844/false
+PASS Painel fora do tabuleiro mode-modal/844/false
+PASS Painel fora do tabuleiro paris-modal/844/false
+PASS Painel fora do tabuleiro promo-modal/844/false
+PASS Perspectiva pretas
+PASS Perspectiva brancas
+PASS Destrava câmera
+PASS Trava câmera
+PASS Toque e2-e4
+PASS Desfazer
+PASS Roque
+PASS En passant
+PASS Promoção
+PASS IA responde ai-easy
+PASS IA responde ai-medium
+PASS IA responde ai-hard
+PASS Lance remoto sem eco
+PASS Rejeita lance remoto na cor local
+PASS Toasty envia evento
+PASS Toasty remoto sem eco
+PASS Status de desconexão em português
+PASS Volta ao modo local com perspectiva branca
+CONCLUÍDO

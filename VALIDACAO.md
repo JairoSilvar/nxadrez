@@ -1,68 +1,20 @@
-# Validação — Xadrez Pro 3D v7
+# Validação — Xadrez Pro 3D v8
 
-60 verificações concluídas no navegador.
+Base: Xadrez_Pro_3D_v7_20260922.zip, SHA-256 CE0771EE6AC783C3E7322A682994FE74136B12B83FC1B698043B9A1D07FF61D3.
 
-- 32 peças iniciais
-- Carrega padrao
-- Preserva partida padrao
-- 32 meshes padrao
-- Orientações opostas padrao
-- Carrega premium
-- Preserva partida premium
-- 32 meshes premium
-- Orientações opostas premium
-- Carrega tournament
-- Preserva partida tournament
-- 32 meshes tournament
-- Orientações opostas tournament
-- Carrega medieval
-- Preserva partida medieval
-- 32 meshes medieval
-- Orientações opostas medieval
-- Carrega spiral
-- Preserva partida spiral
-- 32 meshes spiral
-- Orientações opostas spiral
-- Carrega crystal
-- Preserva partida crystal
-- 32 meshes crystal
-- Orientações opostas crystal
-- Carrega cyber
-- Preserva partida cyber
-- 32 meshes cyber
-- Orientações opostas cyber
-- Carrega classico
-- Preserva partida classico
-- 32 meshes classico
-- Orientações opostas classico
-- Oito geometrias distintas
-- Bordas visíveis neon
-- Bordas visíveis madeira
-- Bordas visíveis premium
-- Bordas visíveis minimal
-- Bordas visíveis voxel
-- Enquadramento 320×568
-- Enquadramento 390×844
-- Enquadramento 768×1024
-- Enquadramento 1280×800
-- Enquadramento 844×390
-- Perspectiva pretas
-- Perspectiva brancas
-- Zoom bloqueado
-- Destrava
-- Enquadra e trava
-- Lance por toque e2-e4
-- Desfazer restaura posição
-- Roque move rei e torre
-- En passant remove peão
-- Promoção gera rainha do conjunto
-- Cavalo mantém frente depois do lance
-- Toasty envia evento P2P
-- Toasty recebido aparece sem eco
-- IA responde ai-easy
-- IA responde ai-medium
-- IA responde ai-hard
+215 verificações automatizadas passaram no navegador Chromium embutido. Lista completa em TESTES.txt.
 
-Inspeção visual: oito conjuntos e cinco tabuleiros; orientação dos cavalos conferida por eixo de origem.
+- Oito conjuntos: carregamento, posição preservada, dimensões limitadas à casa, base apoiada e orientação oposta dos cavalos.
+- Todas as 56 combinações de oito conjuntos e sete materiais: geometria e posição preservadas ao trocar acabamento.
+- Cinco tabuleiros: carregamento e enquadramento completo. Inspeção adicional dos vértices do Voxel identificou casas de 0,93; escala corrigida por 4/3 para casas de 1,24.
+- Viewports 320×568, 390×844, 768×1024, 1280×800 e 844×390, controles abertos e recolhidos: sem rolagem horizontal, tabuleiro inteiro e sete painéis fora da área do canvas.
+- Perspectivas branca/preta; travar/destravar câmera; lance e2-e4 por eventos de toque; desfazer; roque; en passant; promoção.
+- Resposta da IA nos três níveis.
+- Conexão simulada: lance remoto sem eco, rejeição de lance remoto na cor local, Toasty transmitido/recebido sem eco, mensagem de desconexão e retorno à perspectiva branca.
+- Inspeção visual de todos os conjuntos, tabuleiros e interface móvel. Botão Fechar fixado no topo dos seletores.
+- Validação de sintaxe JavaScript e UTF-8 estrito dos arquivos próprios. Varredura de padrões de mojibake sem ocorrências nos textos da interface.
+- Modelos GLB, bibliotecas, áudio, imagem Toasty e licenças preservados byte a byte em relação ao ZIP original.
 
-Limites: eventos P2P com conexão controlada, sem partida real entre dispositivos; celular por viewport simulado. Wood Blender não convertido.
+Limites: testes móveis usam viewports simulados, sem aparelho físico. Transporte Paris testado com conexão controlada, sem partida real pela internet entre dois dispositivos; disponibilidade do PeerJS/NAT não verificada. Não há garantia de ausência absoluta de defeitos.
+
+Sandbox/Treino, replay e rádio não existem na v7 anexada e não foram incluídos nesta revisão. Mantidos histórico de lances e áudio ambiente existentes; não são equivalentes a esses recursos.

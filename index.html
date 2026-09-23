@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Xadrez Pro 3D v7</title>
+  <title>Xadrez Pro 3D v8</title>
   <meta name="theme-color" content="#01040c" />
   <meta name="description" content="Xadrez Pro 3D — visual neon holográfico, IA e modos de jogo" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -21,7 +21,7 @@
 </head>
 <body>
   <div id="ui">
-    <div class="logo">XADREZ <span>PRO</span> <small>3D v7</small></div>
+    <div class="logo">XADREZ <span>PRO</span> <small>3D v8</small></div>
 
     <div class="side-panel left">
       <div class="player-card" id="card-white">
@@ -45,7 +45,7 @@
       <div class="captured" id="captured-white"></div>
     </div>
 
-    <div id="status" class="status">Vez de Você</div>
+    <div id="status" class="status">Sua vez</div>
 
     <button id="btn-controls-toggle" class="controls-toggle" type="button" aria-label="Mostrar ou recolher controles" title="Controles">☰</button>
     <div class="bottom-bar" id="bottom-bar">
@@ -55,6 +55,7 @@
       <button id="btn-theme" type="button">Tema</button>
       <button id="btn-camera" type="button" aria-pressed="true">🔓 Destravar câmera</button>
       <button id="btn-pieces" type="button">Peças 3D</button>
+      <button id="btn-material" type="button">Cor e material</button>
       <button id="btn-board" type="button">Tabuleiro</button>
       <button id="btn-sound" type="button" title="Som">🔊</button>
       <button id="btn-toasty" type="button" title="Testar Toasty">🔥</button>
@@ -65,6 +66,7 @@
       <div id="move-list"></div>
     </div>
 
+    <div id="material-modal" class="modal hidden"><div class="modal-box"><div class="modal-title">Cor e material das peças</div><div id="material-options" class="mode-btns"></div><p class="mode-note">O acabamento muda sem trocar o modelo. “Cores do tema” acompanha o tema visual.</p><button id="btn-close-material" class="close-btn" type="button">Fechar</button></div></div>
     <div id="theme-modal" class="modal hidden">
       <div class="modal-box">
         <div class="modal-title">Tema visual</div>
@@ -76,15 +78,7 @@
     <div id="pieces-modal" class="modal hidden">
       <div class="modal-box">
         <div class="modal-title">Estilo das peças 3D</div>
-        <div class="mode-btns piece-options">
-          <button type="button" data-piece-style="padrao" data-label="Padrão model.glb">Padrão — model.glb</button>
-          <button type="button" data-piece-style="classico" data-label="Staunton Clássico">Staunton Clássico — GLB leve</button>
-          <button type="button" data-piece-style="premium" data-label="Tournament Premium">Tournament Premium — A Beautiful Game</button>
-          <button type="button" data-piece-style="royal" data-label="Royal Dourado">Royal Dourado</button>
-          <button type="button" data-piece-style="crystal" data-label="Crystal Neon">Crystal Neon</button>
-          <button type="button" data-piece-style="cyber" data-label="Cyber Neon">Cyber / Neon</button>
-          <button type="button" data-piece-style="obsidian" data-label="Obsidiana">Obsidiana</button>
-        </div>
+        <div class="mode-btns piece-options"></div>
         <p class="mode-note">Cada conjunto carrega sua própria geometria. A partida é preservada.</p>
         <button class="close-btn" id="btn-close-pieces" type="button">Fechar</button>
       </div>
@@ -94,15 +88,7 @@
     <div id="board-modal" class="modal hidden">
       <div class="modal-box">
         <div class="modal-title">Modelo do tabuleiro</div>
-        <div class="mode-btns board-options">
-          <button type="button" data-board-style="neon" data-label="Neon padrão">Neon padrão</button>
-          <button type="button" data-board-style="madeira" data-label="Tournament Wood">Tournament Wood</button>
-          <button type="button" data-board-style="marmore" data-label="Luxury Marble">Luxury Marble</button>
-          <button type="button" data-board-style="medieval" data-label="Royal Medieval">Royal Medieval</button>
-          <button type="button" data-board-style="crystal" data-label="Crystal">Crystal</button>
-          <button type="button" data-board-style="cyber" data-label="Cyber Neon">Cyber Neon</button>
-          <button type="button" data-board-style="minimal" data-label="Minimal / Mobile">Minimal / Mobile</button>
-        </div>
+        <div class="mode-btns board-options"></div>
         <p class="mode-note">O tabuleiro é independente do tema e das peças. A escolha fica salva.</p>
         <button class="close-btn" id="btn-close-board" type="button">Fechar</button>
       </div>
@@ -112,13 +98,13 @@
       <div class="modal-box">
         <div class="modal-title">Modo de jogo</div>
         <div class="mode-btns">
-          <button type="button" data-mode="local">2 Jogadores (Local)</button>
-          <button type="button" data-mode="ai-easy">Contra Máquina — Fácil</button>
-          <button type="button" data-mode="ai-medium">Contra Máquina — Médio</button>
-          <button type="button" data-mode="ai-hard">Contra Máquina — Difícil</button>
+          <button type="button" data-mode="local">Dois jogadores (local)</button>
+          <button type="button" data-mode="ai-easy">Contra a máquina — Fácil</button>
+          <button type="button" data-mode="ai-medium">Contra a máquina — Médio</button>
+          <button type="button" data-mode="ai-hard">Contra a máquina — Difícil</button>
           <button type="button" data-mode="paris" class="paris-btn">Sala Paris (Rosa) — 2 dispositivos</button>
         </div>
-        <p class="mode-note">Multiplayer online (salas P2P) usa a linha v14 com Vercel + Redis. Esta edição 3D foca visual + IA local.</p>
+        <p class="mode-note">Jogue neste dispositivo, contra a máquina ou na Sala Paris com outro dispositivo. Paris precisa de internet.</p>
         <button class="close-btn" id="btn-close-mode" type="button">Fechar</button>
       </div>
     </div>
@@ -166,7 +152,7 @@
   <div id="asset-status" role="status">Carregando peças 3D…</div>
   <div id="canvas-wrap"></div>
   <script src="GLTFLoader.js"></script>
-<script src="assets-v7.js"></script>
+<script src="assets-v8.js"></script>
 <script src="game.js"></script>
   <script>
     if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) {
@@ -177,3 +163,4 @@
   </script>
 </body>
 </html>
+

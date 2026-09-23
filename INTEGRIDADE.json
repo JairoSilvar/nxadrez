@@ -1,266 +1,73 @@
 {
-  "assets-v7.js": {
-    "bytes": 3070,
-    "sha256": "a8cd21b0c4599c676ff72ba5647abc02c5f17160db47d1f5b5c4e0f653647078"
-  },
-  "chess.min.js": {
-    "bytes": 17493,
-    "sha256": "bcced46af6a454f2ce6f973d74e52b73b6496f6ce88eb7724939385292c33058"
-  },
-  "CREDITOS.md": {
-    "bytes": 1554,
-    "sha256": "922470e0efc5269ae796a6d5b5a068571b7ba6b415e39d39c82b3a6f2fef1a65"
-  },
-  "game.js": {
-    "bytes": 64576,
-    "sha256": "1e64c04dfc50df7a2d7257d95af40d75ffff40bd4d90d607073298bde5a39c69"
-  },
-  "GLTFLoader.js": {
-    "bytes": 96550,
-    "sha256": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6"
-  },
-  "index.html": {
-    "bytes": 9385,
-    "sha256": "6285d5bf7488ea3fe70c3d689f955364aa4c0568a78e2cea1acff2bb4b83a322"
-  },
-  "manifest.json": {
-    "bytes": 498,
-    "sha256": "cef4eb60c113ac54810d6ec949a64b723c58e1fe3002d013d9e424fe7e17b79e"
-  },
-  "OrbitControls.js": {
-    "bytes": 26375,
-    "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2"
-  },
-  "peerjs.min.js": {
-    "bytes": 92865,
-    "sha256": "ad5d8870d1e389914f9cba8d35be313c4327c69ee0a221e482e9bf7621136fe5"
-  },
-  "README.md": {
-    "bytes": 2975,
-    "sha256": "545d6c7304d6cc44b3e0cea6f0292564f47cefca43f643630d1f34648c9cbc81"
-  },
-  "style.css": {
-    "bytes": 23507,
-    "sha256": "98d509a2665f4b47c82e92c461a5090444388a0dbe343c37ebf810aadbf22d11"
-  },
-  "sw.js": {
-    "bytes": 1320,
-    "sha256": "e5305e4b24b9dcaefe06737edee029f2175435a461506b2925b53edbcf9f9fe0"
-  },
-  "three.js": {
-    "bytes": 1143038,
-    "sha256": "ffb3e7d06010b75b3ab9ee862085e75073f028986116e454615fdfe69dd66084"
-  },
-  "VALIDACAO.md": {
-    "bytes": 1890,
-    "sha256": "c0a7c7229d26667cda9a36971d0e60afad6d960948ea584977fcecf6d19bbf1d"
-  },
-  "assets/toasty-sprite.png": {
-    "bytes": 1349777,
-    "sha256": "2ea09254ef8a8f94118f2d541c15781b85dd5a0eb132646d8984d9102b63170b"
-  },
-  "assets/toasty.mp3": {
-    "bytes": 19990,
-    "sha256": "449746e5358b9989fa6fb149007293072624f9be273e49eddd01183de8ebd4e0"
-  },
-  "licenses/ABeautifulGame.md": {
-    "bytes": 3783,
-    "sha256": "35b650cc930a9c86de184f28e973e5122e26a0c20b88175e7c362e1faf97596b"
-  },
-  "models/model.glb": {
-    "bytes": 351280,
-    "sha256": "e0c831a9416d42117ddfde2c23dc21906b1be8abe35f26c54d838335678fd86d"
-  },
-  "licenses/Staunton-Pieces-master/LICENSE": {
-    "bytes": 1078,
-    "sha256": "9b704b1ddb3ffd8d9323fea402b71dbfd5649c26ecdeb3b84a5cc1a29326cb77"
-  },
-  "licenses/Staunton-Pieces-master/README.md": {
-    "bytes": 69,
-    "sha256": "18ee1197ce2dd00228acfcfa3e480bc2d756426deecd6ca6db90db86227ebb5e"
-  },
-  "models/boards/minimal.glb": {
-    "bytes": 1080,
-    "sha256": "3d4ccc0017c59bd5591f6504476907df629bd5ddcb1da8cf4acc6d9ba094eaa4"
-  },
-  "models/boards/premium.glb": {
-    "bytes": 1656632,
-    "sha256": "1ca70de2a0068ca2e44246683c61c7513bd5ec3217b6d801419fff708a83abff"
-  },
-  "models/boards/voxel.glb": {
-    "bytes": 7992,
-    "sha256": "52cbeb366ca6d30b1a8d75daeb8b695a271e05114916ee2769c98821ceeacd1a"
-  },
-  "models/boards/wood.glb": {
-    "bytes": 150048,
-    "sha256": "d98f15c9c07e91314130e0fe62c3bba62160f6f0002078e8b0ccd7b3d5b0458e"
-  },
-  "models/sets/crystal/bishop.glb": {
-    "bytes": 241024,
-    "sha256": "04783cd79d02035dc8ed3af1c7a6892d36e736db284258e936a388f6685f1fc4"
-  },
-  "models/sets/crystal/king.glb": {
-    "bytes": 241024,
-    "sha256": "7b2d67eb4f0fd1367cbc4351e9735dc10ebfac638d8da75f36ac57219713a182"
-  },
-  "models/sets/crystal/knight.glb": {
-    "bytes": 240960,
-    "sha256": "2c032a48ee74c3d93adfc467c498d999a62a13db66faafcfb1a2a0f66f0585a9"
-  },
-  "models/sets/crystal/pawn.glb": {
-    "bytes": 241024,
-    "sha256": "15d3c7086d8f0af50a8697a71cb082a5e4bb5ba45dbfcf6ed6793288f6cdd543"
-  },
-  "models/sets/crystal/queen.glb": {
-    "bytes": 241024,
-    "sha256": "daebd301c9ffab1ed549008c1a2e06d7cd5da2dc389101380a8e46b811fe9b9d"
-  },
-  "models/sets/crystal/rook.glb": {
-    "bytes": 241020,
-    "sha256": "8385b36929e02fa8059d2ad39ffff9e54c7c39b0f9247894797c7e6c161f50f2"
-  },
-  "models/sets/cyber/bishop.glb": {
-    "bytes": 103068,
-    "sha256": "683bacf94e5a514dc6abeafa5e67e2bf3aedeb8c85122e4323eebe8fbd4f7f34"
-  },
-  "models/sets/cyber/king.glb": {
-    "bytes": 265700,
-    "sha256": "0b977d920398f3b99de9e843ea3dc49e93f24cd9278e70d409fc239e89b9eeb2"
-  },
-  "models/sets/cyber/knight.glb": {
-    "bytes": 109372,
-    "sha256": "620d04c173d6546bffdbfbbbc37bc4a8fd6fc6c40cccfa3c21d1f440e2c9cab0"
-  },
-  "models/sets/cyber/pawn.glb": {
-    "bytes": 75932,
-    "sha256": "89d13067f7f9c35c5ee6b4a522bc81643a95f7ff91be36dbc359e3214fe2d4f3"
-  },
-  "models/sets/cyber/queen.glb": {
-    "bytes": 223748,
-    "sha256": "59b4e0e0aa0050e0d4bef35456fca377c590a3c2de5f4f7fe9027d4d313dab02"
-  },
-  "models/sets/cyber/rook.glb": {
-    "bytes": 141248,
-    "sha256": "6ebc809a017a00a65eab6ff477474ba0943a610cb72a1edc8f12c8a5af623906"
-  },
-  "models/sets/light/bishop.glb": {
-    "bytes": 87400,
-    "sha256": "0792908f324b0ed12d7d05b1411c82f80dcc8a401753f34750beac57331f6415"
-  },
-  "models/sets/light/king.glb": {
-    "bytes": 26588,
-    "sha256": "90b96cb192fc687fda1ef3bdb7dab53f1819e9ad587412af2c80a7078386737a"
-  },
-  "models/sets/light/knight.glb": {
-    "bytes": 14780,
-    "sha256": "6386516da5775c66123d254a15fa6a85150afb4e6887228daf1ea534b59b6e31"
-  },
-  "models/sets/light/pawn.glb": {
-    "bytes": 44912,
-    "sha256": "fe996c83ed2ec319eec1ceaf4f6fd5e892b6dbfd0fcae502f0499129228abaee"
-  },
-  "models/sets/light/queen.glb": {
-    "bytes": 59504,
-    "sha256": "aee6bfdaf992152a61f3e5c31135bdf442affb079865bce81534d0d03b1cb736"
-  },
-  "models/sets/light/rook.glb": {
-    "bytes": 27268,
-    "sha256": "16f8dc65adb886bfbf58f2d532b20fecceb178668f1b0df04d67cc4b40095635"
-  },
-  "models/sets/medieval/bishop.glb": {
-    "bytes": 241024,
-    "sha256": "8365bbafb225e4626fe9e48bdd1ff1bf37ec7a64f0cf26f2849faede63839cbd"
-  },
-  "models/sets/medieval/king.glb": {
-    "bytes": 241024,
-    "sha256": "4dd55d4f15663ee6be0f47a72520d49dadf29d7e373b24de990657f21ae8a3eb"
-  },
-  "models/sets/medieval/knight.glb": {
-    "bytes": 241024,
-    "sha256": "d2e803dc0af3e07ca451d69a9d6f3f8a89a8e859a0e026e25f8aa9fafdad096f"
-  },
-  "models/sets/medieval/pawn.glb": {
-    "bytes": 241024,
-    "sha256": "6794ba97c5ca3f0f6874fb8c8d05ef7090571e217cbfea35cc6151db81e7eec6"
-  },
-  "models/sets/medieval/queen.glb": {
-    "bytes": 241024,
-    "sha256": "a21b2a6e2563be45cd3f4b74263d2e5ff992722dcb6c6c8104fb2543785896b2"
-  },
-  "models/sets/medieval/rook.glb": {
-    "bytes": 240992,
-    "sha256": "718e449c48aa4d2464429a6997c9b33142d2c87af26bd7fd37f9fd91b05fa244"
-  },
-  "models/sets/premium/bishop.glb": {
-    "bytes": 255984,
-    "sha256": "443b26b2f6bdecdd3d65def3e72f54ac5b4ce82db578b7405eefb616f0f10df4"
-  },
-  "models/sets/premium/king.glb": {
-    "bytes": 253504,
-    "sha256": "93677503ee0cbd170336c6777e772ed2f56bf5404754d22e74251f5c9f1431c8"
-  },
-  "models/sets/premium/knight.glb": {
-    "bytes": 238604,
-    "sha256": "61f090c2480e4d26f4ac66090616a9b1939155269c2ac249c04a149e4650b445"
-  },
-  "models/sets/premium/pawn.glb": {
-    "bytes": 216856,
-    "sha256": "0701554624400f0656fb2436ab466fcb01c58797248c5a254ddec80984680c29"
-  },
-  "models/sets/premium/queen.glb": {
-    "bytes": 246672,
-    "sha256": "6edde93670187eabf91f062454ebcbd89e6309f54ecf165d4ee6bceb800587ff"
-  },
-  "models/sets/premium/rook.glb": {
-    "bytes": 248372,
-    "sha256": "1c1ecf25a4da0743a1c0297d18631b482dae0c1d7a680131391125e1eeac8107"
-  },
-  "models/sets/spiral/bishop.glb": {
-    "bytes": 240892,
-    "sha256": "7705ca15f05fb254263555cce84da2a2e0fc0329b8483b2afdebd37ef7a21c16"
-  },
-  "models/sets/spiral/king.glb": {
-    "bytes": 240896,
-    "sha256": "4a9af446d0ea64b8a7c290460e9683d8bd3a060294daf28b6c90d40d3a538700"
-  },
-  "models/sets/spiral/knight.glb": {
-    "bytes": 240844,
-    "sha256": "2e9e0f2139210c35d2532fe4ea27a2dec031d4f55aacab7773e4d61301a8cebb"
-  },
-  "models/sets/spiral/pawn.glb": {
-    "bytes": 240896,
-    "sha256": "727a91017ea284ff1d8b08ea259b6b3c07aaba42fb0a47ef98c71327df7fff38"
-  },
-  "models/sets/spiral/queen.glb": {
-    "bytes": 240896,
-    "sha256": "92fcbc0dfedb23136ad6dd4c699100d35c67a81c4b0b5ff15c90526e0e83e8a0"
-  },
-  "models/sets/spiral/rook.glb": {
-    "bytes": 240896,
-    "sha256": "a36a79866c87a1bae973e9eb75828d42187900cb019eefac4f15639a6f7ba12b"
-  },
-  "models/sets/tournament/bishop.glb": {
-    "bytes": 239024,
-    "sha256": "e535fb469964687741f9247090a4e0ec1b31dbea7eae9a5beede85319156af3f"
-  },
-  "models/sets/tournament/king.glb": {
-    "bytes": 241000,
-    "sha256": "f8081659c4339608dc41dea05a00c7307087a6c995dc774be27c5a953f665b21"
-  },
-  "models/sets/tournament/knight.glb": {
-    "bytes": 241008,
-    "sha256": "23fd891610756de416d9bf04999eafe5d35da0252d7670c7b78ff11ca260cf18"
-  },
-  "models/sets/tournament/pawn.glb": {
-    "bytes": 189020,
-    "sha256": "9b6cd4047411dd34482d724947eb098f04f8df598a3afddfaa67e2a56b4ef8e8"
-  },
-  "models/sets/tournament/queen.glb": {
-    "bytes": 241000,
-    "sha256": "b1733a0fc01fb4d3383f7444a8cb0bdeca7ffff95136d9a76f775dc294cfd841"
-  },
-  "models/sets/tournament/rook.glb": {
-    "bytes": 230620,
-    "sha256": "76f4b2b148cbb95b6289f91331b83a54bd2d33a1c50f915f7c9f37a293406de1"
+  "version": 8,
+  "algorithm": "SHA-256",
+  "files": {
+    "assets/toasty-sprite.png": "2ea09254ef8a8f94118f2d541c15781b85dd5a0eb132646d8984d9102b63170b",
+    "assets/toasty.mp3": "449746e5358b9989fa6fb149007293072624f9be273e49eddd01183de8ebd4e0",
+    "assets-v8.js": "8edc194ddc29803d7fa5de73227f8f91b60f332fac486ee114e1a84ef95920a6",
+    "chess.min.js": "bcced46af6a454f2ce6f973d74e52b73b6496f6ce88eb7724939385292c33058",
+    "CREDITOS.md": "922470e0efc5269ae796a6d5b5a068571b7ba6b415e39d39c82b3a6f2fef1a65",
+    "game.js": "c8476f44334fa30188e5ee1b283ca3fb2f95cfec885008afdc897233811d48f4",
+    "GLTFLoader.js": "5c15967ba830918a9caea6338712c994c354bccd4edc4569bde411c3ec06a3e6",
+    "index.html": "b025c3709566bd396808d73b11a54b794145f0067445fe1e417959006c5c4d09",
+    "licenses/ABeautifulGame.md": "35b650cc930a9c86de184f28e973e5122e26a0c20b88175e7c362e1faf97596b",
+    "licenses/Staunton-Pieces-master/LICENSE": "9b704b1ddb3ffd8d9323fea402b71dbfd5649c26ecdeb3b84a5cc1a29326cb77",
+    "licenses/Staunton-Pieces-master/README.md": "18ee1197ce2dd00228acfcfa3e480bc2d756426deecd6ca6db90db86227ebb5e",
+    "manifest.json": "bde5764421f4812a67be4a5ddee04f4b624109a9c43ed8fecd7291f311ccdd3d",
+    "models/boards/minimal.glb": "3d4ccc0017c59bd5591f6504476907df629bd5ddcb1da8cf4acc6d9ba094eaa4",
+    "models/boards/premium.glb": "1ca70de2a0068ca2e44246683c61c7513bd5ec3217b6d801419fff708a83abff",
+    "models/boards/voxel.glb": "52cbeb366ca6d30b1a8d75daeb8b695a271e05114916ee2769c98821ceeacd1a",
+    "models/boards/wood.glb": "d98f15c9c07e91314130e0fe62c3bba62160f6f0002078e8b0ccd7b3d5b0458e",
+    "models/model.glb": "e0c831a9416d42117ddfde2c23dc21906b1be8abe35f26c54d838335678fd86d",
+    "models/sets/crystal/bishop.glb": "04783cd79d02035dc8ed3af1c7a6892d36e736db284258e936a388f6685f1fc4",
+    "models/sets/crystal/king.glb": "7b2d67eb4f0fd1367cbc4351e9735dc10ebfac638d8da75f36ac57219713a182",
+    "models/sets/crystal/knight.glb": "2c032a48ee74c3d93adfc467c498d999a62a13db66faafcfb1a2a0f66f0585a9",
+    "models/sets/crystal/pawn.glb": "15d3c7086d8f0af50a8697a71cb082a5e4bb5ba45dbfcf6ed6793288f6cdd543",
+    "models/sets/crystal/queen.glb": "daebd301c9ffab1ed549008c1a2e06d7cd5da2dc389101380a8e46b811fe9b9d",
+    "models/sets/crystal/rook.glb": "8385b36929e02fa8059d2ad39ffff9e54c7c39b0f9247894797c7e6c161f50f2",
+    "models/sets/cyber/bishop.glb": "683bacf94e5a514dc6abeafa5e67e2bf3aedeb8c85122e4323eebe8fbd4f7f34",
+    "models/sets/cyber/king.glb": "0b977d920398f3b99de9e843ea3dc49e93f24cd9278e70d409fc239e89b9eeb2",
+    "models/sets/cyber/knight.glb": "620d04c173d6546bffdbfbbbc37bc4a8fd6fc6c40cccfa3c21d1f440e2c9cab0",
+    "models/sets/cyber/pawn.glb": "89d13067f7f9c35c5ee6b4a522bc81643a95f7ff91be36dbc359e3214fe2d4f3",
+    "models/sets/cyber/queen.glb": "59b4e0e0aa0050e0d4bef35456fca377c590a3c2de5f4f7fe9027d4d313dab02",
+    "models/sets/cyber/rook.glb": "6ebc809a017a00a65eab6ff477474ba0943a610cb72a1edc8f12c8a5af623906",
+    "models/sets/light/bishop.glb": "0792908f324b0ed12d7d05b1411c82f80dcc8a401753f34750beac57331f6415",
+    "models/sets/light/king.glb": "90b96cb192fc687fda1ef3bdb7dab53f1819e9ad587412af2c80a7078386737a",
+    "models/sets/light/knight.glb": "6386516da5775c66123d254a15fa6a85150afb4e6887228daf1ea534b59b6e31",
+    "models/sets/light/pawn.glb": "fe996c83ed2ec319eec1ceaf4f6fd5e892b6dbfd0fcae502f0499129228abaee",
+    "models/sets/light/queen.glb": "aee6bfdaf992152a61f3e5c31135bdf442affb079865bce81534d0d03b1cb736",
+    "models/sets/light/rook.glb": "16f8dc65adb886bfbf58f2d532b20fecceb178668f1b0df04d67cc4b40095635",
+    "models/sets/medieval/bishop.glb": "8365bbafb225e4626fe9e48bdd1ff1bf37ec7a64f0cf26f2849faede63839cbd",
+    "models/sets/medieval/king.glb": "4dd55d4f15663ee6be0f47a72520d49dadf29d7e373b24de990657f21ae8a3eb",
+    "models/sets/medieval/knight.glb": "d2e803dc0af3e07ca451d69a9d6f3f8a89a8e859a0e026e25f8aa9fafdad096f",
+    "models/sets/medieval/pawn.glb": "6794ba97c5ca3f0f6874fb8c8d05ef7090571e217cbfea35cc6151db81e7eec6",
+    "models/sets/medieval/queen.glb": "a21b2a6e2563be45cd3f4b74263d2e5ff992722dcb6c6c8104fb2543785896b2",
+    "models/sets/medieval/rook.glb": "718e449c48aa4d2464429a6997c9b33142d2c87af26bd7fd37f9fd91b05fa244",
+    "models/sets/premium/bishop.glb": "443b26b2f6bdecdd3d65def3e72f54ac5b4ce82db578b7405eefb616f0f10df4",
+    "models/sets/premium/king.glb": "93677503ee0cbd170336c6777e772ed2f56bf5404754d22e74251f5c9f1431c8",
+    "models/sets/premium/knight.glb": "61f090c2480e4d26f4ac66090616a9b1939155269c2ac249c04a149e4650b445",
+    "models/sets/premium/pawn.glb": "0701554624400f0656fb2436ab466fcb01c58797248c5a254ddec80984680c29",
+    "models/sets/premium/queen.glb": "6edde93670187eabf91f062454ebcbd89e6309f54ecf165d4ee6bceb800587ff",
+    "models/sets/premium/rook.glb": "1c1ecf25a4da0743a1c0297d18631b482dae0c1d7a680131391125e1eeac8107",
+    "models/sets/spiral/bishop.glb": "7705ca15f05fb254263555cce84da2a2e0fc0329b8483b2afdebd37ef7a21c16",
+    "models/sets/spiral/king.glb": "4a9af446d0ea64b8a7c290460e9683d8bd3a060294daf28b6c90d40d3a538700",
+    "models/sets/spiral/knight.glb": "2e9e0f2139210c35d2532fe4ea27a2dec031d4f55aacab7773e4d61301a8cebb",
+    "models/sets/spiral/pawn.glb": "727a91017ea284ff1d8b08ea259b6b3c07aaba42fb0a47ef98c71327df7fff38",
+    "models/sets/spiral/queen.glb": "92fcbc0dfedb23136ad6dd4c699100d35c67a81c4b0b5ff15c90526e0e83e8a0",
+    "models/sets/spiral/rook.glb": "a36a79866c87a1bae973e9eb75828d42187900cb019eefac4f15639a6f7ba12b",
+    "models/sets/tournament/bishop.glb": "e535fb469964687741f9247090a4e0ec1b31dbea7eae9a5beede85319156af3f",
+    "models/sets/tournament/king.glb": "f8081659c4339608dc41dea05a00c7307087a6c995dc774be27c5a953f665b21",
+    "models/sets/tournament/knight.glb": "23fd891610756de416d9bf04999eafe5d35da0252d7670c7b78ff11ca260cf18",
+    "models/sets/tournament/pawn.glb": "9b6cd4047411dd34482d724947eb098f04f8df598a3afddfaa67e2a56b4ef8e8",
+    "models/sets/tournament/queen.glb": "b1733a0fc01fb4d3383f7444a8cb0bdeca7ffff95136d9a76f775dc294cfd841",
+    "models/sets/tournament/rook.glb": "76f4b2b148cbb95b6289f91331b83a54bd2d33a1c50f915f7c9f37a293406de1",
+    "OrbitControls.js": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2",
+    "peerjs.min.js": "ad5d8870d1e389914f9cba8d35be313c4327c69ee0a221e482e9bf7621136fe5",
+    "README.md": "9e3c58c857c794f3b2568c2f59373a7ab94aff209bae681718e8859faf92b356",
+    "style.css": "2989b9f119bc95e7272c6f43edf450ba201a86fcd5a9217ec7e7bc11e943bc87",
+    "sw.js": "c5f2fb18d6b81043b8cd699d7c25f931ca842c2ee3555cdcd0a466a6d38283f2",
+    "TESTES.txt": "44d9344181cf6dd5fa5afaee59a90cb85d757df185b138abd9a9b49e27c47d93",
+    "three.js": "ffb3e7d06010b75b3ab9ee862085e75073f028986116e454615fdfe69dd66084",
+    "VALIDACAO.md": "6914d58d8c91d4744467a5ac3aa61b3d79de0cfd12e4c2b7c4f8f8d84902364f"
   }
 }

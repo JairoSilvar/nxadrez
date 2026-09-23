@@ -1,4 +1,4 @@
-var XADREZ_PRO_BUILD_V7 = "7-20260922";
+var XADREZ_PRO_BUILD_V8 = "8-20260922";
 // Xadrez Pro 3D — Nova versão
 // Visual neon + IA + temas + Toasty + animação por peça
 (function () {
@@ -15,7 +15,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     { id: 'matrix', name: 'Matrix', w: 0x33ff66, b: 0x00aa44, emW: 0x20c048, emB: 0x008830 },
     { id: 'cyberpunk', name: 'Cyberpunk', w: 0x00e5ff, b: 0xffea00, emW: 0x00b0c0, emB: 0xc0b000 },
     { id: 'gelo', name: 'Gelo / Roxo', w: 0xaaddff, b: 0xbb44ff, emW: 0x70a0c8, emB: 0x8030c0 },
-    { id: 'toxic', name: 'Toxic', w: 0x84cc16, b: 0x9333ea, emW: 0x60a010, emB: 0x7020b0 },
+    { id: 'toxic', name: 'Tóxico', w: 0x84cc16, b: 0x9333ea, emW: 0x60a010, emB: 0x7020b0 },
     { id: 'paris', name: 'Paris Rosa', w: 0xec4899, b: 0x831843, emW: 0xc03070, emB: 0x601030 }
   ];
 
@@ -23,6 +23,9 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
   let pieceStyle = localStorage.getItem('xp-v7-piece-style') || 'padrao';
   if (!XPAssets.sets[pieceStyle]) pieceStyle='padrao';
   let templates=null, assetBusy=false, pieceRequest=0, boardRequest=0, boardAsset=null;
+  let pieceMaterial=localStorage.getItem('xp-v8-piece-material')||'padrao';
+  const materialNames={padrao:'Cores do tema',classico:'Marfim / Ébano',premium:'Pérola / Grafite',royal:'Ouro / Violeta',crystal:'Cristal nas cores do tema',cyber:'Neon ciano / Magenta',obsidian:'Prata / Obsidiana'};
+  if(!materialNames[pieceMaterial])pieceMaterial='padrao';
   let cameraLocked=true;
   let boardStyle = localStorage.getItem('xp-v7-board-style') || 'neon';
   if (!XPAssets.boards[boardStyle]) boardStyle='neon';
@@ -129,6 +132,20 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     document.getElementById('btn-undo').onclick = desfazer;
     document.getElementById('btn-sound').onclick = toggleSound;
     document.getElementById('btn-toasty').onclick = () => showToasty();
+    const materialOptions=document.getElementById('material-options');
+    Object.entries(materialNames).forEach(([id,name])=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.dataset.material=id;b.setAttribute('aria-pressed',String(id===pieceMaterial));b.onclick=()=>{
+      if(animating){showToast('Aguarde o lance terminar');return;}
+      pieceMaterial=id;localStorage.setItem('xp-v8-piece-material',id);deselect();loadPosition();
+      materialOptions.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.material===id)));
+      showToast('Acabamento: '+name);
+    };materialOptions.appendChild(b);});
+    document.getElementById('btn-material').onclick=()=>document.getElementById('material-modal').classList.remove('hidden');
+    document.getElementById('btn-close-material').onclick=()=>document.getElementById('material-modal').classList.add('hidden');
+    const panels=document.querySelectorAll('.modal');
+    const panelObserver=new MutationObserver(records=>{const opened=records.find(r=>!r.target.classList.contains('hidden'));if(opened)panels.forEach(p=>{if(p!==opened.target)p.classList.add('hidden');});onResize();});
+    panels.forEach(p=>panelObserver.observe(p,{attributes:true,attributeFilter:['class']}));
+    addEventListener('keydown',e=>{if(e.key==='Escape')panels.forEach(p=>{if(p.id!=='promo-modal')p.classList.add('hidden');});});
+    if(innerWidth<=720||innerHeight<500)document.body.classList.add('controls-collapsed');
     var pieceBtn = document.getElementById('btn-pieces');
     if (pieceBtn) pieceBtn.onclick = function () { document.getElementById('pieces-modal').classList.remove('hidden'); };
     var pieceClose = document.getElementById('btn-close-pieces');
@@ -165,7 +182,8 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     document.querySelectorAll('#mode-modal [data-mode]').forEach(btn => {
       btn.onclick = () => {
         gameMode = btn.dataset.mode;
-        const labels = { local: 'Local', 'ai-easy': 'IA Fácil', 'ai-medium': 'IA Médio', 'ai-hard': 'IA Difícil', paris: 'Paris' };
+        if(gameMode!=='paris'){playerIsWhite=true;parisReady=false;try{if(conn)conn.close();if(peer)peer.destroy();}catch(e){}conn=null;peer=null;}
+        const labels = { local: 'Local', 'ai-easy': 'IA Fácil', 'ai-medium': 'IA Média', 'ai-hard': 'IA Difícil', paris: 'Paris' };
         document.getElementById('btn-mode').textContent = 'Modo: ' + labels[gameMode];
         document.getElementById('name-white').textContent = 'VOCÊ';
         if (gameMode === 'paris') {
@@ -199,7 +217,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     const request=++pieceRequest;assetBusy=true;
     const status=document.getElementById('asset-status');status.hidden=false;status.textContent='Carregando '+XPAssets.sets[id].name+'…';
     try {
-      const next=await XPAssets.loadSet(id);if(request!==pieceRequest)return;
+      const next=await XPAssets.loadSet(id,SQUARE);if(request!==pieceRequest)return;
       // A remote move may have started while downloading; swap only between animations.
       while(animating)await new Promise(r=>setTimeout(r,40));
       if(request!==pieceRequest)return;
@@ -212,7 +230,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
   }
   async function selectBoard(id,startup=false){
     const request=++boardRequest;
-    try{const next=await XPAssets.loadBoard(id);if(request!==boardRequest)return;boardStyle=id;boardAsset=next;buildBoard();localStorage.setItem('xp-v7-board-style',id);document.getElementById('board-modal').classList.add('hidden');onResize();if(!startup)showToast('Tabuleiro: '+XPAssets.boards[id].name);}
+    try{const next=await XPAssets.loadBoard(id,SQUARE);if(request!==boardRequest)return;boardStyle=id;boardAsset=next;buildBoard();localStorage.setItem('xp-v7-board-style',id);document.querySelectorAll('[data-board-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.boardStyle===id)));document.getElementById('board-modal').classList.add('hidden');onResize();if(!startup)showToast('Tabuleiro: '+XPAssets.boards[id].name);}
     catch(e){console.error('Falha no tabuleiro',id,e);showToast('Falha ao carregar tabuleiro. Tente novamente.');}
   }
   function buildBoard() {
@@ -221,7 +239,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     const imported=!!boardAsset;
     if(!imported || XPAssets.boards[boardStyle].squares){
       for(let r=0;r<8;r++)for(let f=0;f<8;f++){
-        const light=(f+r)%2===1;
+        const light=(f+r)%2===0;
         const mat=new THREE.MeshStandardMaterial({color:imported?(light?0xd9cbae:0x302c29):(light?0x173146:0x07121e),roughness:.5,metalness:.15});
         const sq=new THREE.Mesh(new THREE.BoxGeometry(SQUARE,.06,SQUARE),mat);sq.position.set((f-3.5)*SQUARE,0,(r-3.5)*SQUARE);sq.receiveShadow=true;sq.userData={square:alg(f,7-r),isLight:light};boardGroup.add(sq);
       }
@@ -279,7 +297,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
       cyber:    {color:isW?0x00e5ff:0xff2d9b, emissive:isW?0x00a6c8:0xb00066, ei:.95, metal:.28, rough:.10, trans:.12, opacity:.96, coat:1},
       obsidian: {color:isW?0x64748b:0x08090d, emissive:isW?0x0f172a:0x16001f, ei:.18, metal:.66, rough:.12, trans:0, opacity:1, coat:1}
     };
-    var pp = presets[pieceStyle] || (pieceStyle==='medieval'?presets.royal:pieceStyle==='tournament'?presets.classico:presets.premium);
+    var pp = presets[pieceMaterial] || presets.padrao;
     const mat = new THREE.MeshPhysicalMaterial({
       color: pp.color, emissive: pp.emissive, emissiveIntensity: pp.ei,
       metalness: pp.metal, roughness: pp.rough, transmission: pp.trans,
@@ -297,9 +315,9 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     });
 
     // Crystal/Cyber: brilho interno ascendente; Crystal é menos transparente e mais legível.
-    if (pieceStyle === 'crystal' || pieceStyle === 'cyber') {
+    if (pieceMaterial === 'crystal' || pieceMaterial === 'cyber') {
     const spr = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: glowTex(), color: pp.color, transparent: true, opacity: pieceStyle === 'crystal' ? 0.52 : 0.36,
+      map: glowTex(), color: pp.color, transparent: true, opacity: pieceMaterial === 'crystal' ? 0.52 : 0.36,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     spr.scale.set(1.4, 1.4, 1);
@@ -821,7 +839,8 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
       return;
     }
     if (chess.in_checkmate()) {
-      const v = chess.turn() === 'w' ? (gameMode === 'local' ? 'Adversário' : 'Máquina') : 'Você';
+      const lost=chess.turn()===(playerIsWhite?'w':'b');
+      const v=lost?(gameMode.startsWith('ai-')?'A máquina':'O adversário'):'Você';
       el.textContent = 'Xeque-mate — ' + v + ' venceu!';
       el.classList.add('mate');
       if (!wasInCheck) playMate();
@@ -832,7 +851,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     } else if (chess.in_check()) {
       const myTurn = chess.turn() === (playerIsWhite ? 'w' : 'b');
       const who = myTurn ? 'você' : (gameMode.indexOf('ai-')===0 ? 'máquina' : 'adversário');
-      el.textContent = 'Xeque! ' + (myTurn ? 'É a sua vez' : 'Vez do ' + who);
+      el.textContent = 'Xeque! ' + (myTurn ? 'É a sua vez' : (who==='máquina'?'Vez da máquina':'Vez do adversário'));
       el.classList.add('xeque');
       // Toasty só ao ENTRAR em xeque (não a cada atualização de status)
       if (!wasInCheck) playCheck();
@@ -881,6 +900,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
   }
 
   function novaPartida() {
+    remoteMovePending=false;
     chess.reset();
     selected = null; legal = []; aiThinking = false; selectedMesh = null;
     clearHighlights(); clearLastMove(); clearMoveTrails();
@@ -1120,9 +1140,9 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     const wrap=document.getElementById('canvas-wrap');const w=wrap.clientWidth,h=wrap.clientHeight;
     camera.aspect=w/Math.max(h,1);camera.fov=w<h?42:35;camera.updateProjectionMatrix();
     const bounds=new THREE.Box3().setFromObject(boardGroup);
-    bounds.min.y=Math.min(bounds.min.y,-.15);bounds.max.y=Math.max(bounds.max.y,2.0);
+    bounds.min.y=Math.min(bounds.min.y,-.15);bounds.max.y=Math.max(bounds.max.y,1.9);
     const center=bounds.getCenter(new THREE.Vector3());center.y=.45;
-    const direction=new THREE.Vector3(0,w<h?1.55:1.25,playerIsWhite?1:-1).normalize();
+    const direction=new THREE.Vector3(0,w<h?2.6:1.65,playerIsWhite?1:-1).normalize();
     const corners=[];for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z])corners.push(new THREE.Vector3(x,y,z));
     let lo=1,hi=150;
     for(let i=0;i<36;i++){
@@ -1137,8 +1157,11 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
     if(!renderer)return;
     const small=innerWidth<=720||innerHeight<500,collapsed=document.body.classList.contains('controls-collapsed');
     const wrap=document.getElementById('canvas-wrap');
-    if(small){const status=document.getElementById('status').getBoundingClientRect();const control=document.getElementById(collapsed?'btn-controls-toggle':'bottom-bar').getBoundingClientRect();wrap.style.cssText='position:fixed;left:0;right:0;top:'+Math.ceil(Math.max(56,status.bottom+8))+'px;bottom:'+Math.ceil(innerHeight-control.top+8)+'px;';}
-    else{wrap.style.cssText='position:fixed;left:'+(collapsed?16:218)+'px;right:210px;top:100px;bottom:20px;';}
+    const panel=document.querySelector('.modal:not(.hidden)');
+    const control=document.getElementById(collapsed?'btn-controls-toggle':'bottom-bar').getBoundingClientRect();
+    let bottom=small?Math.ceil(innerHeight-control.top+6):12;
+    if(panel)bottom=Math.max(bottom,Math.ceil(innerHeight-panel.getBoundingClientRect().top+6));
+    wrap.style.cssText='position:fixed;left:'+(small?0:collapsed?8:182)+'px;right:8px;top:'+(small?58:82)+'px;bottom:'+bottom+'px;';
     document.documentElement.style.setProperty('--play-top',wrap.style.top);document.documentElement.style.setProperty('--play-bottom',wrap.style.bottom);
     const old=camera.position.clone(),target=controls.target.clone();renderer.setSize(wrap.clientWidth,Math.max(wrap.clientHeight,1));updatePlayCamera();
     if(!cameraLocked&&!cineActive){camera.position.copy(old);controls.target.copy(target);controls.update();}
@@ -1303,7 +1326,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
   }
 
   // ---------- SALA PARIS (PeerJS P2P) ----------
-  let peer = null, conn = null, isParisHost = false, parisReady = false;
+  let peer = null, conn = null, isParisHost = false, parisReady = false, remoteMovePending = false;
 
   function setParisSlots(n) {
     var el = document.getElementById('paris-slots');
@@ -1366,8 +1389,13 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
   function setParisStatus(msg) {
     const st = document.getElementById('paris-status');
     if (st) st.textContent = msg;
+    showToast(msg);
   }
 
+  function parisError(err){
+    const messages={'network':'Falha de rede. Verifique sua conexão.','peer-unavailable':'Sala indisponível. Abra a sala no outro dispositivo.','server-error':'O servidor de salas está indisponível. Tente novamente.','socket-error':'A conexão com o servidor falhou.','socket-closed':'A conexão com o servidor foi encerrada.','unavailable-id':'A Sala Paris já está ocupada.','browser-incompatible':'Este navegador não oferece suporte à conexão entre jogadores.'};
+    return messages[err&&err.type]||'Não foi possível conectar à Sala Paris. Tente novamente.';
+  }
   function bindParisUI() {
     const close = document.getElementById('btn-close-paris');
     if (close) close.onclick = () => document.getElementById('paris-modal').classList.add('hidden');
@@ -1413,7 +1441,7 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
       if (err && (err.type === 'unavailable-id' || String(err).indexOf('taken') >= 0 || String(err).indexOf('ID') >= 0)) {
         setParisStatus('Sala Paris já está ocupada. Entre como visitante digitando Paris.');
       } else {
-        setParisStatus('Erro: ' + (err.type || err.message || err));
+        setParisStatus(parisError(err));
       }
     });
   }
@@ -1470,11 +1498,11 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
         if (animating) return;
         // Apply remote move
         const turnOk = (isParisHost && chess.turn() === 'b') || (!isParisHost && chess.turn() === 'w');
-        if (!turnOk && chess.turn() === (isParisHost ? 'w' : 'b')) {
-          // remote is the other side
-        }
+        if (!turnOk) return;
         try {
           if (!chess.get(data.from)) return;
+          if(!chess.moves({verbose:true}).some(m=>m.from===data.from&&m.to===data.to))return;
+          remoteMovePending=true;
           executarLance(data.from, data.to, data.promotion || 'q');
         } catch (e) {}
       }
@@ -1503,7 +1531,8 @@ var XADREZ_PRO_BUILD_V7 = "7-20260922";
   const _afterMoveOrig = afterMove;
   afterMove = function (move) {
     _afterMoveOrig(move);
-    if (gameMode === 'paris' && conn && conn.open && move) {
+    const wasRemote=remoteMovePending;remoteMovePending=false;
+    if (gameMode === 'paris' && conn && conn.open && move && !wasRemote) {
       try {
         conn.send({ type: 'move', from: move.from, to: move.to, promotion: move.promotion || undefined });
       } catch (e) {}

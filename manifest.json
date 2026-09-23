@@ -1,7 +1,7 @@
 {
-  "name": "Xadrez Pro 3D v7",
-  "short_name": "Xadrez v7",
-  "description": "Xadrez Pro 3D v7 — IA, salas e modelos 3D selecionáveis",
+  "name": "Xadrez Pro 3D v8",
+  "short_name": "Xadrez v8",
+  "description": "Xadrez Pro 3D v8 — IA, salas e modelos 3D selecionáveis",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
